@@ -51,8 +51,23 @@ footer {
   margin: 20px 0;
 }
 
-button {
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+input.visually-hidden:is(:focus, :focus-within) + label {
+  outline: thin dotted;
+}
+
+button, label{
   background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2em;
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
@@ -62,12 +77,16 @@ button {
     0px 18px 88px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
-  opacity: 0.9;
+
 }
 
-button:hover {
+button:hover, label:hover {
   transform: scale(1.05);
   opacity: 1;
+}
+
+.file{
+  height: auto;
 }
 
 li {
