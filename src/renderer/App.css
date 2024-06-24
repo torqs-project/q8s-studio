@@ -3,24 +3,30 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 body {
-overflow: hidden;
-font-family: sans-serif;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
-footer{
+
+footer {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
 }
-#top{
-  position: absolute;
-  top: 0;
-}
-#bottom{
+
+/* #top {
+
+} */
+
+#bottom {
   position: absolute;
   bottom: 0;
 }
-#root{
+
+#root {
   position: relative;
   color: black;
   /* height: 100vh; */
@@ -39,6 +45,7 @@ footer{
 
 .content {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin: 20px 0;
@@ -78,5 +85,3 @@ a:hover {
   opacity: 1;
   text-decoration: none;
 }
-
-
