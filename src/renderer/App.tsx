@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { useState } from 'react';
+import { SetStateAction, useState } from 'react';
 
 function Main() {
   const [kubeconfig, setKubeconfig] = useState();
@@ -54,8 +54,9 @@ function Main() {
     });
   };
 
-  const inputElement = document.getElementById("kube-config");
-  function handleFiles(e) {
+  function handleFiles(e: {
+    target: { files: { name: SetStateAction<undefined> }[] };
+  }) {
     setKubeconfig(e.target.files[0].name);
   }
 

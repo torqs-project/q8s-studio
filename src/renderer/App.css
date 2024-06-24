@@ -5,9 +5,11 @@
 body {
   font-family: sans-serif;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 footer {
@@ -21,9 +23,8 @@ footer {
 
 } */
 
-#bottom {
-  position: absolute;
-  bottom: 0;
+#bottom button{
+ margin-bottom: 0.5em;
 }
 
 #root {
@@ -36,7 +37,6 @@ footer {
     #dd5789 51.77%,
     #7a2c9e 129.35%
   ); */
-
   overflow-y: hidden;
   display: flex;
   justify-content: center;
@@ -67,14 +67,13 @@ button, label{
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 2em;
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
   appearance: none;
   font-size: 1.3rem;
   box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
-    0px 18px 88px -4px rgba(24, 39, 75, 0.14);
+    0px 18px 45px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
 
@@ -87,6 +86,7 @@ button:hover, label:hover {
 
 .file{
   height: auto;
+  margin: 2em;
 }
 
 li {
