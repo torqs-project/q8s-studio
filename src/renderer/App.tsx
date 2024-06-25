@@ -4,8 +4,10 @@ import './App.css';
 import { SetStateAction, useState } from 'react';
 
 function Main() {
-  const [kubeconfig, setKubeconfig] = useState();
-  const [directory, setDirectory] = useState();
+  const [kubeconfigName, setKubeconfigName] = useState();
+  const [kubeconfigPath, setKubeconfigPath] = useState();
+  const [directoryName, setDirectoryName] = useState();
+  const [directoryPath, setDirectoryPath] = useState();
   const openDirectory = async (mode = 'read') => {
     // Following code is from:
     // https://web.dev/patterns/files/open-a-directory#progressive_enhancement
@@ -29,6 +31,8 @@ function Main() {
         const handle = await window.showDirectoryPicker();
         // Get the directory structure.
         directoryStructure = handle;
+        console.log('handle:');
+        console.log(handle);
       } catch (err: any) {
         if (err.name !== 'AbortError') {
           console.error(err.name, err.message);
@@ -54,10 +58,28 @@ function Main() {
     });
   };
 
-  function handleFiles(e: {
-    target: { files: { name: SetStateAction<undefined> }[] };
-  }) {
-    setKubeconfig(e.target.files[0].name);
+  function handleFiles(
+    e: {
+      target: {
+        files: {
+          name: SetStateAction<undefined>;
+          path: SetStateAction<undefined>;
+        }[];
+      };
+    },
+    isDirectory = false,
+  ) {
+    if (isDirectory) {
+      setDirectoryName(e.target.files[0].name);
+      setDirectoryPath(e.target.files[0].path);
+      console.log(e.target.files[0].path);
+      console.log(directoryPath);
+    } else {
+      setKubeconfigName(e.target.files[0].name);
+      console.log(e.target.files[0].path);
+      setKubeconfigPath(e.target.files[0].path);
+      console.log(kubeconfigPath);
+    }
   }
 
   return (
@@ -68,34 +90,55 @@ function Main() {
         </div>
         <div className="file">
           <label className="testi" htmlFor="kube-config">
-            {kubeconfig
-              ? `Selected file: ${kubeconfig}`
+            {kubeconfigName
+              ? `Selected file: ${kubeconfigName}`
               : 'Choose a kubeconfig file...'}
             <input
               type="file"
               name="kube-config"
               id="kube-config"
-              accept=".yaml,.yml"
               className="visually-hidden"
-              onChange={handleFiles}
+              onChange={(event) => handleFiles(event)}
             />
           </label>
+          {`Path: ${kubeconfigPath || 'No config path'}`}
         </div>
+        {/* Uses webkitdirectory property, which is non-standard */}
         <div className="file">
+          <label className="testi" htmlFor="dir">
+            {directoryPath
+              ? `Selected folder: ${directoryName}`
+              : 'Choose a workspace folder...'}
+            <input
+              type="file"
+              name="dir"
+              id="dir"
+              className="visually-hidden"
+              webkitdirectory="true"
+              onChange={(event) => handleFiles(event, true)}
+            />
+          </label>
+          {`Path: ${directoryPath || 'No dir path'}`}
+        </div>
+        {/* Here a version which is standard, but can't find the path for security reasons */}
+        {/* <div className="file">
           <button
             type="button"
             onClick={async () => {
               const directoryHandle = await openDirectory();
-              console.log(directoryHandle);
+              console.log(directoryHandle.values());
               console.log(directoryHandle.name);
-              setDirectory(directoryHandle.name);
+              setDirectoryName(directoryHandle.name);
+              setDirectoryPath(directoryHandle.path);
+              console.log(directoryPath);
             }}
           >
-            {directory
-              ? `Selected directory: ${directory}`
+            {directoryName
+              ? `Selected directory: ${directoryName}`
               : 'Choose workspace directory...'}
           </button>
-        </div>
+          {directoryPath?directoryPath:"No dir path"}
+        </div> */}
       </div>
     </div>
   );
