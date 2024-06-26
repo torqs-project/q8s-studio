@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useState, useRef } from 'react';
 
 function Main() {
   const [kubeconfigName, setKubeconfigName] = useState();
   const [kubeconfigPath, setKubeconfigPath] = useState();
   const [directoryName, setDirectoryName] = useState();
   const [directoryPath, setDirectoryPath] = useState();
+  let commandRef = useRef<string>('');
 
   const openDirectory = async (mode = 'read') => {
     // Following code is from:
@@ -84,12 +85,14 @@ function Main() {
   // If both config file and directory are selected, generate the command
   if (kubeconfigPath && directoryPath) {
     // Generate command
-    const CLIcommand = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace  --pull always  ghcr.io/torqs-project/q8s-devenv:main`;
+    commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace  --pull always  ghcr.io/torqs-project/q8s-devenv:main`;
     // Send command through IPC
     window.electron.ipcRenderer.once('ipc-example', (arg) => {
       console.log(arg);
     });
-    window.electron.ipcRenderer.sendMessage('ipc-example', [CLIcommand]);
+    window.electron.ipcRenderer.sendMessage('ipc-example', [
+      commandRef.current,
+    ]);
   }
   return (
     <div>
@@ -129,6 +132,15 @@ function Main() {
           </label>
           {`Path: ${directoryPath || 'No dir path'}`}
         </div>
+        {commandRef.current ? (
+          <div className="file cmd">
+            <h2>Command:</h2>
+            <p>{commandRef.current}</p>
+          </div>
+        ) : (
+          ''
+        )}
+
         {/* Here a version which is standard, but can't find the path for security reasons */}
         {/* <div className="file">
           <button
