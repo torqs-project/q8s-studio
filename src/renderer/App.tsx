@@ -8,6 +8,7 @@ function Main() {
   const [kubeconfigPath, setKubeconfigPath] = useState();
   const [directoryName, setDirectoryName] = useState();
   const [directoryPath, setDirectoryPath] = useState();
+
   const openDirectory = async (mode = 'read') => {
     // Following code is from:
     // https://web.dev/patterns/files/open-a-directory#progressive_enhancement
@@ -69,19 +70,27 @@ function Main() {
     },
     isDirectory = false,
   ) {
+    // Sets file and directory names and paths
     if (isDirectory) {
       setDirectoryName(e.target.files[0].name);
       setDirectoryPath(e.target.files[0].path);
-      console.log(e.target.files[0].path);
       console.log(directoryPath);
     } else {
       setKubeconfigName(e.target.files[0].name);
-      console.log(e.target.files[0].path);
       setKubeconfigPath(e.target.files[0].path);
       console.log(kubeconfigPath);
     }
   }
-
+  // If both config file and directory are selected, generate the command
+  if (kubeconfigPath && directoryPath) {
+    // Generate command
+    const CLIcommand = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace  --pull always  ghcr.io/torqs-project/q8s-devenv:main`;
+    // Send command through IPC
+    window.electron.ipcRenderer.once('ipc-example', (arg) => {
+      console.log(arg);
+    });
+    window.electron.ipcRenderer.sendMessage('ipc-example', [CLIcommand]);
+  }
   return (
     <div>
       <div className="content">
@@ -114,7 +123,7 @@ function Main() {
               name="dir"
               id="dir"
               className="visually-hidden"
-              webkitdirectory="true"
+              webkitdirectory
               onChange={(event) => handleFiles(event, true)}
             />
           </label>
