@@ -1,24 +1,9 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  openFile: (isDirectory: boolean) => ipcRenderer.invoke('openFile', isDirectory)
-})
+  openFile: (isDirectory: boolean) => ipcRenderer.invoke('openFile', isDirectory),
+  runCommand: (command: string) => {ipcRenderer.invoke('runCommand', command)},
+});
 
-
-
-
-
-
-
-
-// const ipcHandler = {
-//   test: () => {
-//     ipcRenderer.send('test', 'testiiijöajfsölkdjföalkfjlk');
-//   },
-// };
-
-// contextBridge.exposeInMainWorld('ipc', ipcHandler);
-
-// export type TestHandler = typeof ipcHandler;

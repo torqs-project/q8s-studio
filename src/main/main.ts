@@ -53,10 +53,37 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
-// ipcMain.on('ipc-example', (event, arg: string[]) => {
-//   let promis = dialog.showOpenDialogSync({ properties: ['openDirectory'] });
-//   console.log(promis);
-// });
+ipcMain.handle('runCommand', (event, arg) => {
+  // console.log(event.sender);
+  console.log(arg);
+  // Split command to list of arguments
+  const splitted = arg.split(' ');
+  // Get the command
+  const cmd = splitted[0];
+  // Get the arguments
+  const cmdArgs = splitted.slice(1);
+  let bat;
+  if (process.platform === 'linux') {
+    bat = require('child_process').spawn('sudo', splitted);
+  } else {
+    bat = require('child_process').spawn(cmd, cmdArgs);
+  }
+  // Handle stdios
+  bat.stdout.on('data', (data: Buffer) => {
+    console.log(data.toString());
+    ipcRenderer.send('str', `${data.toString()}data`);
+    return `${data.toString()}data`;
+  });
+  bat.stderr.on('data', (err) => {
+    console.log(err.toString());
+    return `${err.toString()}err`;
+  });
+  bat.on('exit', (code) => {
+    console.log(code.toString());
+    return `${code.toString()}exit`;
+  });
+});
+
 // ipcMain.on('ipc-example', (event, arg: string[]) => {
 //   // Split command to list of arguments
 //   const splitted = arg[0].split(' ');

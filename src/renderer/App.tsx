@@ -167,7 +167,7 @@ function Main() {
         </div> */}
         {commandRef.current ? (
           <div className="file cmd">
-            <h2>Command:</h2>
+            <h2>Command to run:</h2>
             <p>{commandRef.current}</p>
           </div>
         ) : (
@@ -175,21 +175,23 @@ function Main() {
         )}
         <div>
           <button
+            {...(kubeconfigPath && directoryPath
+              ? {
+                  disabled: false,
+                }
+              : {
+                  disabled: true,
+                })}
             type="button"
-            onClick={openDialog}
-            // onClick={async () => {
-            //   // Generate command
-            //   // commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-            //   // // Send command through IPC
-            //   // window.electron.ipcRenderer.on('ipc-example', (arg) => {
-            //   //   console.log(arg);
-            //   // });
-            //   // window.electron.ipcRenderer.sendMessage('ipc-example', [
-            //   //   commandRef.current,
-            //   // ]);
-            // }}
+            // onClick={openDialog}
+            onClick={async () => {
+              // Generate command
+              // commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+              // // Send command through IPC
+              window.electronAPI.runCommand(commandRef.current);
+            }}
           >
-            Clik me
+            Run command
           </button>
         </div>
 
