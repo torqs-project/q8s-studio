@@ -9,7 +9,15 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, ipcRenderer } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  ipcRenderer,
+  dialog,
+} from 'electron';
+
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -24,33 +32,58 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-ipcMain.on('ipc-example', (event, arg: string[]) => {
-  // Split command to list of arguments
-  const splitted = arg[0].split(' ');
-  // Get the command
-  const cmd = splitted[0];
-  // Get the arguments
-  const cmdArgs = splitted.slice(1);
-  let bat;
-  if (process.platform === 'linux') {
-    bat = require('child_process').spawn('sudo', splitted);
-  } else {
-    bat = require('child_process').spawn(cmd, cmdArgs);
+
+async function handleFileOpen(channel, isDirectory: boolean) {
+  let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
+  if (isDirectory) {
+    fileOrDir = 'openDirectory';
   }
-  // Handle stdios
-  bat.stdout.on('data', (data: Buffer) => {
-    console.log(data.toString());
-    event.reply('ipc-example', `${data.toString()}data`);
+  console.log(isDirectory);
+  console.log(fileOrDir);
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: [fileOrDir],
   });
-  bat.stderr.on('data', (err) => {
-    console.log(err.toString());
-    event.reply('ipc-example', `${err.toString()}err`);
-  });
-  bat.on('exit', (code) => {
-    event.reply('ipc-example', `${code.toString()}exit`);
-    console.log(code.toString());
-  });
+  if (!canceled) {
+    return filePaths[0];
+  }
+  return [];
+}
+
+ipcMain.handle('openFile', (event, arg) => {
+  return handleFileOpen(event.sender, arg);
 });
+
+// ipcMain.on('ipc-example', (event, arg: string[]) => {
+//   let promis = dialog.showOpenDialogSync({ properties: ['openDirectory'] });
+//   console.log(promis);
+// });
+// ipcMain.on('ipc-example', (event, arg: string[]) => {
+//   // Split command to list of arguments
+//   const splitted = arg[0].split(' ');
+//   // Get the command
+//   const cmd = splitted[0];
+//   // Get the arguments
+//   const cmdArgs = splitted.slice(1);
+//   let bat;
+//   if (process.platform === 'linux') {
+//     bat = require('child_process').spawn('sudo', splitted);
+//   } else {
+//     bat = require('child_process').spawn(cmd, cmdArgs);
+//   }
+//   // Handle stdios
+//   bat.stdout.on('data', (data: Buffer) => {
+//     console.log(data.toString());
+//     event.reply('ipc-example', `${data.toString()}data`);
+//   });
+//   bat.stderr.on('data', (err) => {
+//     console.log(err.toString());
+//     event.reply('ipc-example', `${err.toString()}err`);
+//   });
+//   bat.on('exit', (code) => {
+//     event.reply('ipc-example', `${code.toString()}exit`);
+//     console.log(code.toString());
+//   });
+// });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

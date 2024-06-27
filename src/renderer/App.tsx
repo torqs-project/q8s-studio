@@ -73,11 +73,44 @@ function Main() {
   ) {
     // Sets file and directory names and paths
     if (isDirectory) {
-      setDirectoryName(e.target.files[0].name);
-      setDirectoryPath(e.target.files[0].path);
+      const firstFile = e.target.files[0];
+      if (firstFile) {
+        const { name } = firstFile;
+        const { path } = firstFile;
+        // split the path and use regexp to find both forward and backwards slashes
+        const regexp = /\/|\\/;
+        const pathArray = path.split(regexp);
+        // get the last element of the array
+        const lastElement = pathArray[pathArray.length - 1];
+        // set the directory name and path
+        console.log(pathArray);
+        console.log(name);
+        console.log(path);
+      } else {
+        console.log('thja folder');
+        console.log(e);
+      }
+      // setKubeconfigName();
+      // setKubeconfigPath();
     } else {
       setKubeconfigName(e.target.files[0].name);
       setKubeconfigPath(e.target.files[0].path);
+    }
+  }
+  async function openDialog(isDirectory = false) {
+    const filePath = await window.electronAPI.openFile(isDirectory);
+    console.log(filePath);
+    const regex = /\/|\\/;
+    const pathArray = filePath.split(regex);
+    const name = pathArray[pathArray.length - 1];
+    console.log(name);
+    if (isDirectory) {
+      setDirectoryName(name);
+      setDirectoryPath(filePath);
+    } else {
+      console.log(name);
+      setKubeconfigName(name);
+      setKubeconfigPath(filePath);
     }
   }
   // If both config file and directory are selected, generate the command
@@ -85,51 +118,53 @@ function Main() {
     // Generate command
     commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
     // Send command through IPC
-    window.electron.ipcRenderer.once('ipc-example', (arg) => {
-      console.log(arg);
-    });
-    window.electron.ipcRenderer.sendMessage('ipc-example', [
-      commandRef.current,
-    ]);
+    // window.electron.ipcRenderer.once('ipc-example', (arg) => {
+    //   console.log(arg);
+    // });
+    // window.electron.ipcRenderer.sendMessage('ipc-example', [
+    //   commandRef.current,
+    // ]);
+    // window.electron.ipcRenderer.send('test', 'test');
   }
+  function FileButton({ name, path, isDirectory = false }) {
+    console.log(path);
+    const text = isDirectory
+      ? 'Choose a workspace folder...'
+      : 'Choose a kubernetes configuration file...';
+    return (
+      <div className="file">
+        <button className="file-button" onClick={() => openDialog(isDirectory)}>
+          {path ? `Selected ${isDirectory ? 'folder' : 'file'}: ${name}` : text}
+        </button>
+        <span>{path ? `Path: ${path}` : ''}</span>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="content">
         <div>
           <h2>Please select your local files: </h2>
         </div>
-        <div className="file">
-          <label className="testi" htmlFor="kube-config">
-            {kubeconfigName
-              ? `Selected file: ${kubeconfigName}`
-              : 'Choose a kubeconfig file...'}
-            <input
-              type="file"
-              name="kube-config"
-              id="kube-config"
-              className="visually-hidden"
-              onChange={(event) => handleFiles(event)}
-            />
-          </label>
-          {`Path: ${kubeconfigPath || 'No config path'}`}
-        </div>
+        <FileButton name={kubeconfigName} path={kubeconfigPath} />
+        <FileButton name={directoryName} path={directoryPath} isDirectory />
         {/* Uses webkitdirectory property, which is non-standard */}
-        <div className="file">
+        {/* <div className="file">
           <label className="testi" htmlFor="dir">
             {directoryPath
               ? `Selected folder: ${directoryName}`
               : 'Choose a workspace folder...'}
-            <input
-              type="file"
+            <button
               name="dir"
               id="dir"
               className="visually-hidden"
-              webkitdirectory
-              onChange={(event) => handleFiles(event, true)}
+              webkitdirectory="true"
+              onChange={() => openDialog(true)}
             />
           </label>
           {`Path: ${directoryPath || 'No dir path'}`}
-        </div>
+        </div> */}
         {commandRef.current ? (
           <div className="file cmd">
             <h2>Command:</h2>
@@ -141,17 +176,18 @@ function Main() {
         <div>
           <button
             type="button"
-            onClick={() => {
-              // Generate command
-              commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-              // Send command through IPC
-              window.electron.ipcRenderer.on('ipc-example', (arg) => {
-                console.log(arg);
-              });
-              window.electron.ipcRenderer.sendMessage('ipc-example', [
-                commandRef.current,
-              ]);
-            }}
+            onClick={openDialog}
+            // onClick={async () => {
+            //   // Generate command
+            //   // commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+            //   // // Send command through IPC
+            //   // window.electron.ipcRenderer.on('ipc-example', (arg) => {
+            //   //   console.log(arg);
+            //   // });
+            //   // window.electron.ipcRenderer.sendMessage('ipc-example', [
+            //   //   commandRef.current,
+            //   // ]);
+            // }}
           >
             Clik me
           </button>
