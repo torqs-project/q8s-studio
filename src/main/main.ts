@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, ipcRenderer } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -24,11 +24,32 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate(arg));
+ipcMain.on('ipc-example', (event, arg: string[]) => {
+  // Split command to list of arguments
+  const splitted = arg[0].split(' ');
+  // Get the command
+  const cmd = splitted[0];
+  // Get the arguments
+  const cmdArgs = splitted.slice(1);
+  let bat;
+  if (process.platform === 'linux') {
+    bat = require('child_process').spawn('sudo', splitted);
+  } else {
+    bat = require('child_process').spawn(cmd, cmdArgs);
+  }
+  // Handle stdios
+  bat.stdout.on('data', (data: Buffer) => {
+    console.log(data.toString());
+    event.reply('ipc-example', `${data.toString()}data`);
+  });
+  bat.stderr.on('data', (err) => {
+    console.log(err.toString());
+    event.reply('ipc-example', `${err.toString()}err`);
+  });
+  bat.on('exit', (code) => {
+    event.reply('ipc-example', `${code.toString()}exit`);
+    console.log(code.toString());
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -58,7 +79,7 @@ const installExtensions = async () => {
 
 const createWindow = async () => {
   if (isDebug) {
-    await installExtensions();
+    installExtensions();
   }
 
   const RESOURCES_PATH = app.isPackaged
