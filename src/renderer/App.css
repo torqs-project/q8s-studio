@@ -12,7 +12,6 @@
     #dd5789 51.77%,
     #7a2c9e 129.35%
   ); */
-  overflow-y: scroll;
 }
 body {
   font-family: sans-serif;
@@ -89,7 +88,7 @@ button:hover, label:hover {
 }
 .file{
   height: auto;
-  margin: 2em;
+  margin: 2em 0;
 }
 
 li {

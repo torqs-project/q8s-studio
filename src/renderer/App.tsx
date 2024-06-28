@@ -172,7 +172,22 @@ function Main() {
               // Generate command
               // commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
               // // Send command through IPC
-              window.electronAPI.runCommand(commandRef.current);
+              window.electronAPI
+                .runCommand(commandRef.current)
+                .then((result: any) => {
+                  console.log(`RESULT:${result}`);
+                  return 'ölkajsdf';
+                })
+                .catch((err: any) => {
+                  console.log(err);
+                });
+              window.electronAPI.on('cli-output', (event) => {
+                console.log(event);
+                // console.log(arg);
+              });
+              // ipcRenderer.on('cli-output', (event, arg) => {
+              //   console.log(arg);
+              // });
             }}
           >
             Run command

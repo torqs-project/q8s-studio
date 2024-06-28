@@ -14,7 +14,6 @@ import {
   BrowserWindow,
   shell,
   ipcMain,
-  ipcRenderer,
   dialog,
   WebContents,
 } from 'electron';
@@ -54,9 +53,7 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
-ipcMain.handle('runCommand', (event, arg) => {
-  // console.log(event.sender);
-  console.log(arg);
+ipcMain.handle('runCommand', async (_event, arg) => {
   // Split command to list of arguments
   const splitted = arg.split(' ');
   // Get the command
@@ -72,19 +69,24 @@ ipcMain.handle('runCommand', (event, arg) => {
   // Handle stdios
   bat.stdout.on('data', (data: Buffer) => {
     console.log(data.toString());
-    ipcRenderer.send('str', `${data.toString()}data`);
+    mainWindow?.webContents.send(
+      'cli-output',
+      `OUTPUT DATA: ${data.toString()}`,
+    );
+    // ipcRenderer.send('str', `${data.toString()}data`);
     return `${data.toString()}data`;
   });
   bat.stderr.on('data', (err: Buffer) => {
     console.log(err.toString());
+    mainWindow?.webContents.send('cli-output', `ERR DATA: ${err.toString()}`);
     return `${err.toString()}err`;
   });
   bat.on('exit', (code: Buffer) => {
     console.log(code.toString());
+    mainWindow?.webContents.send('cli-output', `EXIT CODE: ${code.toString()}`);
     return `${code.toString()}exit`;
   });
 });
-
 // ipcMain.on('ipc-example', (event, arg: string[]) => {
 //   // Split command to list of arguments
 //   const splitted = arg[0].split(' ');
