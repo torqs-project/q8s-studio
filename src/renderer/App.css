@@ -5,6 +5,8 @@
  #root {
   position: relative;
   color: black;
+  overflow: auto;
+  overflow-y: scroll;
   /* height: 100vh; */
   /* background: linear-gradient(
     200.96deg,
@@ -43,7 +45,6 @@ footer {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 20px 0;
 }
 
 .visually-hidden {
@@ -88,7 +89,9 @@ button:hover, label:hover {
 }
 .file{
   height: auto;
-  margin: 2em 0;
+  margin: 2em 0 0em;
+  display: flex;
+  flex-direction: column;
 }
 
 li {
@@ -105,4 +108,19 @@ a {
 a:hover {
   opacity: 1;
   text-decoration: none;
+}
+.console{
+  background-color: black;
+  color: white;
+  width: 75vw;
+  height: 30vh;
+  overflow: scroll;
+  p:first-child{
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  p {
+    margin: 0;
+    padding: 0.5em 0.5em;
+  }
 }

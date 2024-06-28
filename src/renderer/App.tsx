@@ -1,7 +1,23 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+
+function ConsoleView() {
+  const [output, setOutput] = useState<React.JSX.Element[]>([
+    <p>Command output:</p>,
+  ]);
+  // Add a listener to the channel cli-output
+  window.electronAPI.on('cli-output', (data) => {
+    const newline: React.JSX.Element = <p>{data}</p>;
+    setOutput([...output, newline]);
+  });
+  return (
+    <div className="console file">
+      <div className="output">{output}</div>
+    </div>
+  );
+}
 
 interface fileButtonProps {
   name: string;
@@ -15,7 +31,6 @@ function FileButton({
   isDirectory = false,
   openDialog,
 }: fileButtonProps) {
-  console.log(path);
   const text = isDirectory
     ? 'Choose a workspace folder...'
     : 'Choose a kubernetes configuration file...';
@@ -95,16 +110,13 @@ function Main() {
 
   const openDialog = async (isDirectory = false) => {
     const filePath = await window.electronAPI.openFile(isDirectory);
-    console.log(filePath);
     const regex = /\/|\\/;
     const pathArray = filePath.split(regex);
     const name = pathArray[pathArray.length - 1];
-    console.log(name);
     if (isDirectory) {
       setDirectoryName(name);
       setDirectoryPath(filePath);
     } else {
-      console.log(name);
       setKubeconfigName(name);
       setKubeconfigPath(filePath);
     }
@@ -170,29 +182,23 @@ function Main() {
             // onClick={openDialog}
             onClick={async () => {
               // Generate command
-              // commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+              commandRef.current = `docker run -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
               // // Send command through IPC
               window.electronAPI
                 .runCommand(commandRef.current)
                 .then((result: any) => {
-                  console.log(`RESULT:${result}`);
-                  return 'ölkajsdf';
+                  console.log(result);
+                  return '';
                 })
                 .catch((err: any) => {
                   console.log(err);
                 });
-              window.electronAPI.on('cli-output', (event) => {
-                console.log(event);
-                // console.log(arg);
-              });
-              // ipcRenderer.on('cli-output', (event, arg) => {
-              //   console.log(arg);
-              // });
             }}
           >
             Run command
           </button>
         </div>
+        <ConsoleView />
 
         {/* Here a version which is standard, but can't find the path for security reasons */}
         {/* <div className="file">

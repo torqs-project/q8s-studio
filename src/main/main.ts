@@ -68,7 +68,7 @@ ipcMain.handle('runCommand', async (_event, arg) => {
   }
   // Handle stdios
   bat.stdout.on('data', (data: Buffer) => {
-    console.log(data.toString());
+    // console.log(data.toString());
     mainWindow?.webContents.send(
       'cli-output',
       `OUTPUT DATA: ${data.toString()}`,
@@ -77,12 +77,12 @@ ipcMain.handle('runCommand', async (_event, arg) => {
     return `${data.toString()}data`;
   });
   bat.stderr.on('data', (err: Buffer) => {
-    console.log(err.toString());
+    // console.log(err.toString());
     mainWindow?.webContents.send('cli-output', `ERR DATA: ${err.toString()}`);
     return `${err.toString()}err`;
   });
   bat.on('exit', (code: Buffer) => {
-    console.log(code.toString());
+    // console.log(code.toString());
     mainWindow?.webContents.send('cli-output', `EXIT CODE: ${code.toString()}`);
     return `${code.toString()}exit`;
   });
