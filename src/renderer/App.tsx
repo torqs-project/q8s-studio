@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { SetStateAction, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 function Main() {
   const [kubeconfigName, setKubeconfigName] = useState();
@@ -10,7 +10,7 @@ function Main() {
   const [directoryPath, setDirectoryPath] = useState();
   const commandRef = useRef<string>('');
 
-  const openDirectory = async (mode = 'read') => {
+  /* const openDirectory = async (mode = 'read') => {
     // Following code is from:
     // https://web.dev/patterns/files/open-a-directory#progressive_enhancement
     // It is used for selecting just a directory
@@ -58,45 +58,8 @@ function Main() {
         input.click();
       }
     });
-  };
+  }; */
 
-  function handleFiles(
-    e: {
-      target: {
-        files: {
-          name: SetStateAction<undefined>;
-          path: SetStateAction<undefined>;
-        }[];
-      };
-    },
-    isDirectory = false,
-  ) {
-    // Sets file and directory names and paths
-    if (isDirectory) {
-      const firstFile = e.target.files[0];
-      if (firstFile) {
-        const { name } = firstFile;
-        const { path } = firstFile;
-        // split the path and use regexp to find both forward and backwards slashes
-        const regexp = /\/|\\/;
-        const pathArray = path.split(regexp);
-        // get the last element of the array
-        const lastElement = pathArray[pathArray.length - 1];
-        // set the directory name and path
-        console.log(pathArray);
-        console.log(name);
-        console.log(path);
-      } else {
-        console.log('thja folder');
-        console.log(e);
-      }
-      // setKubeconfigName();
-      // setKubeconfigPath();
-    } else {
-      setKubeconfigName(e.target.files[0].name);
-      setKubeconfigPath(e.target.files[0].path);
-    }
-  }
   async function openDialog(isDirectory = false) {
     const filePath = await window.electronAPI.openFile(isDirectory);
     console.log(filePath);
@@ -133,7 +96,11 @@ function Main() {
       : 'Choose a kubernetes configuration file...';
     return (
       <div className="file">
-        <button className="file-button" onClick={() => openDialog(isDirectory)}>
+        <button
+          type="button"
+          className="file-button"
+          onClick={() => openDialog(isDirectory)}
+        >
           {path ? `Selected ${isDirectory ? 'folder' : 'file'}: ${name}` : text}
         </button>
         <span>{path ? `Path: ${path}` : ''}</span>
@@ -175,13 +142,7 @@ function Main() {
         )}
         <div>
           <button
-            {...(kubeconfigPath && directoryPath
-              ? {
-                  disabled: false,
-                }
-              : {
-                  disabled: true,
-                })}
+            disabled={!(kubeconfigPath && directoryPath)}
             type="button"
             // onClick={openDialog}
             onClick={async () => {

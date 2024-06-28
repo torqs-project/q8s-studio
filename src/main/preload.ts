@@ -3,7 +3,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 const electronAPI = {
-  openFile: (isDirectory: boolean) => ipcRenderer.invoke('openFile', isDirectory),
+  openFile: (isDirectory: boolean) =>
+    ipcRenderer.invoke('openFile', isDirectory),
   runCommand: (command: string) => ipcRenderer.invoke('runCommand', command),
 };
 

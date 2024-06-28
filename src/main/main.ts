@@ -16,6 +16,7 @@ import {
   ipcMain,
   ipcRenderer,
   dialog,
+  WebContents,
 } from 'electron';
 
 import { autoUpdater } from 'electron-updater';
@@ -33,7 +34,7 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-async function handleFileOpen(channel, isDirectory: boolean) {
+async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
   if (isDirectory) {
     fileOrDir = 'openDirectory';
@@ -74,11 +75,11 @@ ipcMain.handle('runCommand', (event, arg) => {
     ipcRenderer.send('str', `${data.toString()}data`);
     return `${data.toString()}data`;
   });
-  bat.stderr.on('data', (err) => {
+  bat.stderr.on('data', (err: Buffer) => {
     console.log(err.toString());
     return `${err.toString()}err`;
   });
-  bat.on('exit', (code) => {
+  bat.on('exit', (code: Buffer) => {
     console.log(code.toString());
     return `${code.toString()}exit`;
   });
