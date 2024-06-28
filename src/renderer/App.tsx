@@ -3,11 +3,44 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { useState, useRef } from 'react';
 
+interface fileButtonProps {
+  name: string;
+  path: string;
+  isDirectory?: boolean;
+  openDialog: (isDirectory: boolean) => void;
+}
+function FileButton({
+  name,
+  path,
+  isDirectory = false,
+  openDialog,
+}: fileButtonProps) {
+  console.log(path);
+  const text = isDirectory
+    ? 'Choose a workspace folder...'
+    : 'Choose a kubernetes configuration file...';
+  return (
+    <div className="file">
+      <button
+        type="button"
+        className="file-button"
+        onClick={() => openDialog(isDirectory)}
+      >
+        {path ? `Selected ${isDirectory ? 'folder' : 'file'}: ${name}` : text}
+      </button>
+      <span>{path ? `Path: ${path}` : ''}</span>
+    </div>
+  );
+}
+FileButton.defaultProps = {
+  isDirectory: false,
+};
+
 function Main() {
-  const [kubeconfigName, setKubeconfigName] = useState();
-  const [kubeconfigPath, setKubeconfigPath] = useState();
-  const [directoryName, setDirectoryName] = useState();
-  const [directoryPath, setDirectoryPath] = useState();
+  const [kubeconfigName, setKubeconfigName] = useState('');
+  const [kubeconfigPath, setKubeconfigPath] = useState('');
+  const [directoryName, setDirectoryName] = useState('');
+  const [directoryPath, setDirectoryPath] = useState('');
   const commandRef = useRef<string>('');
 
   /* const openDirectory = async (mode = 'read') => {
@@ -60,7 +93,7 @@ function Main() {
     });
   }; */
 
-  async function openDialog(isDirectory = false) {
+  const openDialog = async (isDirectory = false) => {
     const filePath = await window.electronAPI.openFile(isDirectory);
     console.log(filePath);
     const regex = /\/|\\/;
@@ -75,7 +108,7 @@ function Main() {
       setKubeconfigName(name);
       setKubeconfigPath(filePath);
     }
-  }
+  };
   // If both config file and directory are selected, generate the command
   if (kubeconfigPath && directoryPath) {
     // Generate command
@@ -89,33 +122,23 @@ function Main() {
     // ]);
     // window.electron.ipcRenderer.send('test', 'test');
   }
-  function FileButton({ name, path, isDirectory = false }) {
-    console.log(path);
-    const text = isDirectory
-      ? 'Choose a workspace folder...'
-      : 'Choose a kubernetes configuration file...';
-    return (
-      <div className="file">
-        <button
-          type="button"
-          className="file-button"
-          onClick={() => openDialog(isDirectory)}
-        >
-          {path ? `Selected ${isDirectory ? 'folder' : 'file'}: ${name}` : text}
-        </button>
-        <span>{path ? `Path: ${path}` : ''}</span>
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="content">
         <div>
           <h2>Please select your local files: </h2>
         </div>
-        <FileButton name={kubeconfigName} path={kubeconfigPath} />
-        <FileButton name={directoryName} path={directoryPath} isDirectory />
+        <FileButton
+          name={kubeconfigName}
+          path={kubeconfigPath}
+          openDialog={openDialog}
+        />
+        <FileButton
+          name={directoryName}
+          path={directoryPath}
+          isDirectory
+          openDialog={openDialog}
+        />
         {/* Uses webkitdirectory property, which is non-standard */}
         {/* <div className="file">
           <label className="testi" htmlFor="dir">
