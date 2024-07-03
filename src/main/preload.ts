@@ -1,29 +1,27 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 
-export type Channels = 'ipc-example';
-
-const electronHandler = {
-  ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]) {
-      ipcRenderer.send(channel, ...args);
+const electronAPI = {
+  openFile: (isDirectory: boolean) =>
+    ipcRenderer.invoke('openFile', isDirectory),
+  runCommand: (command: string) => {
+    return ipcRenderer.invoke('runCommand', command);
+  },
+  on(
+    channel: string,
+    callback: {
+      (event: IpcRendererEvent, data: string | number): void;
     },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
-        func(...args);
-      ipcRenderer.on(channel, subscription);
-
-      return () => {
-        ipcRenderer.removeListener(channel, subscription);
-      };
-    },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
-      ipcRenderer.once(channel, (_event, ...args) => func(...args));
-    },
+  ) {
+    const subscription = (_event: any, args: any) => callback(_event, args);
+    ipcRenderer.on(channel, subscription);
+    return () => {
+      ipcRenderer.removeListener(channel, subscription);
+    };
   },
 };
 
-contextBridge.exposeInMainWorld('electron', electronHandler);
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
-export type ElectronHandler = typeof electronHandler;
+export type ElectronAPI = typeof electronAPI;

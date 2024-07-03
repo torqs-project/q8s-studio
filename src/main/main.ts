@@ -9,7 +9,15 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  dialog,
+  WebContents,
+} from 'electron';
+
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -25,11 +33,87 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
+  let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
+  if (isDirectory) {
+    fileOrDir = 'openDirectory';
+  }
+  console.log(isDirectory);
+  console.log(fileOrDir);
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: [fileOrDir],
+  });
+  if (!canceled) {
+    return filePaths[0];
+  }
+  return [];
+}
+
+ipcMain.handle('openFile', (event, arg) => {
+  return handleFileOpen(event.sender, arg);
 });
+
+ipcMain.handle('runCommand', async (_event, arg) => {
+  // Split command to list of arguments
+  const splitted = arg.split(' ');
+  // Get the command
+  const cmd = splitted[0];
+  // Get the arguments
+  const cmdArgs = splitted.slice(1);
+  let bat;
+  if (process.platform === 'linux') {
+    bat = require('child_process').spawn('sudo', splitted);
+  } else {
+    bat = require('child_process').spawn(cmd, cmdArgs);
+  }
+  // Handle stdios
+  bat.stdout.on('data', (data: Buffer) => {
+    // console.log(data.toString());
+    mainWindow?.webContents.send(
+      'cli-output',
+      `OUTPUT DATA: ${data.toString()}`,
+    );
+    // ipcRenderer.send('str', `${data.toString()}data`);
+    return `${data.toString()}data`;
+  });
+  bat.stderr.on('data', (err: Buffer) => {
+    // console.log(err.toString());
+    mainWindow?.webContents.send('cli-output', `ERR DATA: ${err.toString()}`);
+    return `${err.toString()}err`;
+  });
+  bat.on('exit', (code: Buffer) => {
+    // console.log(code.toString());
+    mainWindow?.webContents.send('cli-output', `EXIT CODE: ${code.toString()}`);
+    return `${code.toString()}exit`;
+  });
+});
+// ipcMain.on('ipc-example', (event, arg: string[]) => {
+//   // Split command to list of arguments
+//   const splitted = arg[0].split(' ');
+//   // Get the command
+//   const cmd = splitted[0];
+//   // Get the arguments
+//   const cmdArgs = splitted.slice(1);
+//   let bat;
+//   if (process.platform === 'linux') {
+//     bat = require('child_process').spawn('sudo', splitted);
+//   } else {
+//     bat = require('child_process').spawn(cmd, cmdArgs);
+//   }
+//   // Handle stdios
+//   bat.stdout.on('data', (data: Buffer) => {
+//     console.log(data.toString());
+//     event.reply('ipc-example', `${data.toString()}data`);
+//   });
+//   bat.stderr.on('data', (err) => {
+//     console.log(err.toString());
+//     event.reply('ipc-example', `${err.toString()}err`);
+//   });
+//   bat.on('exit', (code) => {
+//     event.reply('ipc-example', `${code.toString()}exit`);
+//     console.log(code.toString());
+//   });
+// });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -58,7 +142,7 @@ const installExtensions = async () => {
 
 const createWindow = async () => {
   if (isDebug) {
-    await installExtensions();
+    installExtensions();
   }
 
   const RESOURCES_PATH = app.isPackaged
