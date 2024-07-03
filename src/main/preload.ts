@@ -10,9 +10,11 @@ const electronAPI = {
   },
   on(
     channel: string,
-    callback: { (event: IpcRendererEvent, arg: any): void; (arg0: any): any },
+    callback: {
+      (event: IpcRendererEvent, data: string | number): void;
+    },
   ) {
-    const subscription = (_event: any, args: any) => callback(args);
+    const subscription = (_event: any, args: any) => callback(_event, args);
     ipcRenderer.on(channel, subscription);
     return () => {
       ipcRenderer.removeListener(channel, subscription);

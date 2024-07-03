@@ -8,10 +8,12 @@ function ConsoleView() {
     <p>Command output:</p>,
   ]);
   // Add a listener to the channel cli-output
-  window.electronAPI.on('cli-output', (data) => {
-    const newline: React.JSX.Element = <p>{data}</p>;
-    setOutput([...output, newline]);
-  });
+  if (window.electronAPI) {
+    window.electronAPI.on('cli-output', (_event, data) => {
+      const newline: React.JSX.Element = <p>{data}</p>;
+      setOutput([...output, newline]);
+    });
+  }
   return (
     <div className="console file">
       <div className="output">{output}</div>
@@ -183,7 +185,7 @@ function Main() {
             onClick={async () => {
               // Generate command
               commandRef.current = `docker run -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-              // // Send command through IPC
+              // Send command through IPC
               window.electronAPI
                 .runCommand(commandRef.current)
                 .then((result: any) => {
