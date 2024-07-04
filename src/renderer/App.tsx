@@ -7,15 +7,38 @@ function ConsoleView() {
   const [output, setOutput] = useState<React.JSX.Element[]>([
     <p>Command output:</p>,
   ]);
+  const [showPassInput, setShowPassInput] = useState(false);
   // Add a listener to the channel cli-output
   if (window.electronAPI) {
     window.electronAPI.on('cli-output', (_event, data) => {
       const newline: React.JSX.Element = <p>{data}</p>;
       setOutput([...output, newline]);
     });
+    window.electronAPI.askPass((needsPassword) => {
+      setShowPassInput(needsPassword);
+    });
   }
   return (
     <div className="console file">
+      <div>
+        {showPassInput ? (
+          <label htmlFor="sudoPass">
+            <input type="password" name="sudoPass" id="pass" />
+            <button
+              type="button"
+              onClick={() =>
+                window.electronAPI?.password(
+                  document.getElementById('pass')?.value,
+                )
+              }
+            >
+              OK
+            </button>
+          </label>
+        ) : (
+          ''
+        )}
+      </div>
       <div className="output">{output}</div>
     </div>
   );
@@ -126,7 +149,7 @@ function Main() {
   // If both config file and directory are selected, generate the command
   if (kubeconfigPath && directoryPath) {
     // Generate command
-    commandRef.current = `docker run -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+    commandRef.current = `docker run --rm --name q8studio -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
     // Send command through IPC
     // window.electron.ipcRenderer.once('ipc-example', (arg) => {
     //   console.log(arg);
@@ -182,15 +205,15 @@ function Main() {
             disabled={!(kubeconfigPath && directoryPath)}
             type="button"
             // onClick={openDialog}
-            onClick={async () => {
+            onClick={() => {
               // Generate command
-              commandRef.current = `docker run -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+              // commandRef.current = `docker run --name test -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
               // Send command through IPC
               window.electronAPI
                 .runCommand(commandRef.current)
                 .then((result: any) => {
                   console.log(result);
-                  return '';
+                  return result;
                 })
                 .catch((err: any) => {
                   console.log(err);

@@ -20,6 +20,7 @@ import {
 
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { ChildProcess } from 'child_process';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -53,37 +54,61 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
-ipcMain.handle('runCommand', async (_event, arg) => {
+ipcMain.handle('runCommand', (_event, arg) => {
   // Split command to list of arguments
   const splitted = arg.split(' ');
   // Get the command
   const cmd = splitted[0];
   // Get the arguments
   const cmdArgs = splitted.slice(1);
-  let bat;
+  let bat: ChildProcess;
   if (process.platform === 'linux') {
-    bat = require('child_process').spawn('sudo', splitted);
+    let command = ['-S'];
+    command = command.concat(splitted);
+    console.log(`AFTER CONCAT ${command}`);
+    bat = require('child_process').spawn('sudo', command);
   } else {
-    bat = require('child_process').spawn(cmd, cmdArgs);
+    bat = require('child_process').spawn('docker', ['logs', '-f', 'kube']);
   }
   // Handle stdios
   bat.stdout.on('data', (data: Buffer) => {
     // console.log(data.toString());
     mainWindow?.webContents.send(
       'cli-output',
-      `OUTPUT DATA: ${data.toString()}`,
+      `OUTPUT DATA CP: ${data.toString()}`,
     );
     // ipcRenderer.send('str', `${data.toString()}data`);
     return `${data.toString()}data`;
   });
   bat.stderr.on('data', (err: Buffer) => {
-    // console.log(err.toString());
-    mainWindow?.webContents.send('cli-output', `ERR DATA: ${err.toString()}`);
+    // if err has "password in the string, use ask pass"
+    console.log(err.toString().includes('password'));
+    console.log(err.toString().includes('password'));
+    if (err.toString().includes('password')) {
+      console.log("tultiin ask-pass llähetykseen");
+      // Send message to renderer to include a password input
+      mainWindow?.webContents.send('ask-pass', true);
+      // Handle the returning password from renderer
+      ipcMain.on('pass', (_event2, pwd = '') => {
+        bat.stdin?.write(`${pwd}\n`);
+      });
+    }
+    if (err.toString().includes('URL')) {
+      console.log(`Löytyi URLl alskjklfajdfl: ${err.toString()}`);
+      mainWindow?.webContents.send('cli-output', `Wait for the URL...`);
+      mainWindow?.webContents.send('cli-output', `${err.toString()}`);
+    } else {
+      mainWindow?.webContents.send('cli-output', `${err.toString()}`);
+    }
+
     return `${err.toString()}err`;
   });
   bat.on('exit', (code: Buffer) => {
     // console.log(code.toString());
-    mainWindow?.webContents.send('cli-output', `EXIT CODE: ${code.toString()}`);
+    mainWindow?.webContents.send(
+      'cli-output',
+      `EXIT CODE CP: ${code.toString()}`,
+    );
     return `${code.toString()}exit`;
   });
 });
