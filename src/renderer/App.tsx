@@ -14,7 +14,7 @@ function ConsoleView() {
       const newline: React.JSX.Element = <p>{data}</p>;
       setOutput([...output, newline]);
     });
-    window.electronAPI.askPass((needsPassword) => {
+    window.electronAPI.askPass((needsPassword: boolean) => {
       setShowPassInput(needsPassword);
     });
   }
@@ -28,7 +28,7 @@ function ConsoleView() {
               type="button"
               onClick={() =>
                 window.electronAPI?.password(
-                  document.getElementById('pass')?.value,
+                  (document.getElementById('pass') as HTMLInputElement).value,
                 )
               }
             >

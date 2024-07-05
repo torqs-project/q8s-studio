@@ -8,10 +8,10 @@ const electronAPI = {
   runCommand: (command: string) => {
     return ipcRenderer.invoke('runCommand', command);
   },
-  askPass: (callback) => {
+  askPass: (callback: (data: boolean) => void) => {
     ipcRenderer.on('ask-pass', (event, data) => callback(data));
   },
-  password:(value:string) => ipcRenderer.send('pass', value),
+  password: (value: string) => ipcRenderer.send('pass', value),
   on(
     channel: string,
     callback: {

@@ -85,7 +85,7 @@ ipcMain.handle('runCommand', (_event, arg) => {
     console.log(err.toString().includes('password'));
     console.log(err.toString().includes('password'));
     if (err.toString().includes('password')) {
-      console.log("tultiin ask-pass llähetykseen");
+      // console.log('tultiin ask-pass llähetykseen');
       // Send message to renderer to include a password input
       mainWindow?.webContents.send('ask-pass', true);
       // Handle the returning password from renderer
