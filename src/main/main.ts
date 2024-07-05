@@ -81,11 +81,9 @@ ipcMain.handle('runCommand', (_event, arg) => {
     return `${data.toString()}data`;
   });
   bat.stderr?.on('data', (err: Buffer) => {
+    // console.log(err.toString().includes('password'));
     // if err has "password in the string, use ask pass"
-    console.log(err.toString().includes('password'));
-    console.log(err.toString().includes('password'));
     if (err.toString().includes('password')) {
-      // console.log('tultiin ask-pass llähetykseen');
       // Send message to renderer to include a password input
       mainWindow?.webContents.send('ask-pass', true);
       // Handle the returning password from renderer
