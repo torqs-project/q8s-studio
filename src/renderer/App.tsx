@@ -1,13 +1,29 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-function ConsoleView() {
+/**
+ * A div with the console inside.
+ *
+ * Listens on IPC for output, and possibly for a password prompt.
+ * If password is needed, the prompt is shown for the user and password is forwarded to the main process.
+ * @returns {React.JSX.Element}
+ */
+function ConsoleView(): React.JSX.Element {
   const [output, setOutput] = useState<React.JSX.Element[]>([
     <p>Command output:</p>,
   ]);
   const [showPassInput, setShowPassInput] = useState(false);
+  // Add auto-scroll to the bottom of the console
+  useEffect(() => {
+    const consoleDiv = document.querySelector('.console>.output');
+    consoleDiv?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest',
+    });
+  }, [output]);
   // Add a listener to the channel cli-output
   if (window.electronAPI) {
     window.electronAPI.on('cli-output', (_event, data) => {
@@ -21,9 +37,11 @@ function ConsoleView() {
   return (
     <div className="console file">
       <div>
+        {/* TODO: more elegant password prompt */}
+        {/* Password promt */}
         {showPassInput ? (
           <label htmlFor="sudoPass">
-            <input type="password" name="sudoPass" id="pass" />
+            <input type="password" name="sudoPass" />
             <button
               type="button"
               onClick={() =>
