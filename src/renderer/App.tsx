@@ -11,13 +11,19 @@ import React, { useState, useRef, useEffect } from 'react';
  * @returns {React.JSX.Element}
  */
 function ConsoleView(): React.JSX.Element {
-  const [output, setOutput] = useState<React.JSX.Element[]>([
-    <p>Command output:</p>,
-  ]);
+  const [output, setOutput] = useState<React.JSX.Element[]>([]);
   const [showPassInput, setShowPassInput] = useState(false);
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
+    const consoleDivPass = document.querySelector('.console>.output-pass');
+    // console.log(consoleDivPass);
+    consoleDivPass?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest',
+    });
     const consoleDiv = document.querySelector('.console>.output');
+    // console.log(consoleDiv);
     consoleDiv?.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
@@ -36,28 +42,39 @@ function ConsoleView(): React.JSX.Element {
   }
   return (
     <div className="console file">
-      <div>
-        {/* TODO: more elegant password prompt */}
-        {/* Password promt */}
-        {showPassInput ? (
-          <label htmlFor="sudoPass">
-            <input type="password" name="sudoPass" />
-            <button
-              type="button"
-              onClick={() =>
-                window.electronAPI?.password(
-                  (document.getElementById('pass') as HTMLInputElement).value,
-                )
-              }
-            >
-              OK
-            </button>
-          </label>
-        ) : (
-          ''
-        )}
+      <p>Command output:</p>
+      <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
+        {output}{' '}
+        <div>
+          {/* Password promt */}
+          {showPassInput ? (
+            <label className="pass" htmlFor="sudoPass">
+              <input type="password" name="sudoPass" />
+              <button
+                type="button"
+                onClick={(event) => {
+                  const clickedButton = event.target;
+                  const passInput: HTMLInputElement | null = (
+                    clickedButton as HTMLElement
+                  ).previousElementSibling as HTMLInputElement;
+                  // console.log(passInput?.value);
+                  window.electronAPI?.password(
+                    (passInput.value as string) || '',
+                  );
+                  setShowPassInput(false);
+                }}
+              >
+                OK
+              </button>
+            </label>
+          ) : (
+            ''
+          )}
+        </div>
       </div>
-      <div className="output">{output}</div>
+      <div className={showPassInput ? 'output hidden' : 'output'}>
+        {output}{' '}
+      </div>
     </div>
   );
 }

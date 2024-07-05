@@ -58,7 +58,19 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   outline: thin dotted;
 }
 
-button, label{
+.pass {
+  background-color: black;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 0.5em;
+  button {
+    padding: 0.25em 0.5em;
+    /* margin-left: 0.5em; */
+  }
+}
+
+button{
   background-color: white;
   display: flex;
   justify-content: center;
@@ -75,7 +87,7 @@ button, label{
 
 }
 
-button:hover, label:hover {
+button:hover {
   transform: scale(1.05);
   opacity: 1;
 }
@@ -115,7 +127,7 @@ a:hover {
   width: 75vw;
   height: 30vh;
   overflow: scroll;
-  p:first-child{
+  >p:first-child{
     font-weight: bold;
     font-size: 1.5rem;
   }
@@ -123,4 +135,14 @@ a:hover {
     margin: 0;
     padding: 0.5em 0.5em;
   }
+  .output-pass{
+    display: flex;
+    button:hover{
+      transform: scale(1.15);
+    }
+  }
+}
+
+.hidden{
+  display: none !important;
 }

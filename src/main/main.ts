@@ -91,10 +91,10 @@ ipcMain.handle('runCommand', (_event, arg) => {
       // Handle the returning password from renderer
       ipcMain.on('pass', (_event2, pwd = '') => {
         bat.stdin?.write(`${pwd}\n`);
+        bat.stdin?.end();
       });
     }
     if (err.toString().includes('URL')) {
-      console.log(`Löytyi URLl alskjklfajdfl: ${err.toString()}`);
       mainWindow?.webContents.send('cli-output', `Wait for the URL...`);
       mainWindow?.webContents.send('cli-output', `${err.toString()}`);
     } else {
