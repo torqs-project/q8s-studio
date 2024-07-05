@@ -68,10 +68,10 @@ ipcMain.handle('runCommand', (_event, arg) => {
     console.log(`AFTER CONCAT ${command}`);
     bat = require('child_process').spawn('sudo', command);
   } else {
-    bat = require('child_process').spawn('docker', ['logs', '-f', 'kube']);
+    bat = require('child_process').spawn(cmd, cmdArgs);
   }
   // Handle stdios
-  bat.stdout.on('data', (data: Buffer) => {
+  bat.stdout?.on('data', (data: Buffer) => {
     // console.log(data.toString());
     mainWindow?.webContents.send(
       'cli-output',
@@ -80,7 +80,7 @@ ipcMain.handle('runCommand', (_event, arg) => {
     // ipcRenderer.send('str', `${data.toString()}data`);
     return `${data.toString()}data`;
   });
-  bat.stderr.on('data', (err: Buffer) => {
+  bat.stderr?.on('data', (err: Buffer) => {
     // if err has "password in the string, use ask pass"
     console.log(err.toString().includes('password'));
     console.log(err.toString().includes('password'));
