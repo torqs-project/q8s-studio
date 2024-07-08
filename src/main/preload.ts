@@ -11,6 +11,9 @@ const electronAPI = {
   askPass: (callback: (data: boolean) => void) => {
     ipcRenderer.on('ask-pass', (event, data) => callback(data));
   },
+  labUrl: (callback: (url: string) => void) => {
+    ipcRenderer.on('lab-url', (event, url) => callback(url));
+  },
   password: (value: string) => ipcRenderer.send('pass', value),
   on(
     channel: string,

@@ -52,16 +52,16 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
-ipcMain.handle('runCommand', (_event, arg) => {
+ipcMain.handle('runCommand', (_event, givenCommand) => {
   // Split command to list of arguments
-  const splitted = arg.split(' ');
+  const splitted = givenCommand.split(' ');
   // Get the command
   const cmd = splitted[0];
   // Get the arguments
   const cmdArgs = splitted.slice(1);
   let bat: ChildProcess;
   if (process.platform === 'linux') {
-    let command = ['-S'];
+    let command = ['-S']; // Use -S to ask the sudo password and show it in the output
     command = command.concat(splitted);
     console.log(`AFTER CONCAT ${command}`);
     bat = require('child_process').spawn('sudo', command);
@@ -69,17 +69,15 @@ ipcMain.handle('runCommand', (_event, arg) => {
     bat = require('child_process').spawn(cmd, cmdArgs);
   }
   // Handle stdios
+  // For some reason output from docker goes to stderr instead of stdout.
   bat.stdout?.on('data', (data: Buffer) => {
-    // console.log(data.toString());
     mainWindow?.webContents.send(
       'cli-output',
       `OUTPUT DATA CP: ${data.toString()}`,
     );
-    // ipcRenderer.send('str', `${data.toString()}data`);
     return `${data.toString()}data`;
   });
   bat.stderr?.on('data', (err: Buffer) => {
-    // console.log(err.toString().includes('password'));
     // if err has "password in the string, use ask pass"
     if (err.toString().includes('password')) {
       // Send message to renderer to include a password input
@@ -91,8 +89,21 @@ ipcMain.handle('runCommand', (_event, arg) => {
       });
     }
     if (err.toString().includes('URL')) {
-      mainWindow?.webContents.send('cli-output', `Wait for the URL...`);
-      mainWindow?.webContents.send('cli-output', `${err.toString()}`);
+      const stringAsWords = err.toString().split(' ');
+      stringAsWords.forEach((possibleURL) => {
+        let checkedURL;
+        try {
+          checkedURL = new URL(possibleURL);
+          if (checkedURL.hostname.includes('127.0.0.1')) {
+            mainWindow?.webContents.send('lab-url', checkedURL.toString());
+            // Use this code to open in the same window as the application:
+            // mainWindow?.webContents.loadURL(checkedURL.toString());
+          }
+        } catch (error) {
+          // console.log('No Valid URL found');
+        }
+      });
+      mainWindow?.webContents.send('cli-output', `URL: ${err.toString()}`);
     } else {
       mainWindow?.webContents.send('cli-output', `${err.toString()}`);
     }
@@ -100,7 +111,6 @@ ipcMain.handle('runCommand', (_event, arg) => {
     return `${err.toString()}err`;
   });
   bat.on('exit', (code: Buffer) => {
-    // console.log(code.toString());
     mainWindow?.webContents.send(
       'cli-output',
       `EXIT CODE CP: ${code.toString()}`,
@@ -108,33 +118,6 @@ ipcMain.handle('runCommand', (_event, arg) => {
     return `${code.toString()}exit`;
   });
 });
-// ipcMain.on('ipc-example', (event, arg: string[]) => {
-//   // Split command to list of arguments
-//   const splitted = arg[0].split(' ');
-//   // Get the command
-//   const cmd = splitted[0];
-//   // Get the arguments
-//   const cmdArgs = splitted.slice(1);
-//   let bat;
-//   if (process.platform === 'linux') {
-//     bat = require('child_process').spawn('sudo', splitted);
-//   } else {
-//     bat = require('child_process').spawn(cmd, cmdArgs);
-//   }
-//   // Handle stdios
-//   bat.stdout.on('data', (data: Buffer) => {
-//     console.log(data.toString());
-//     event.reply('ipc-example', `${data.toString()}data`);
-//   });
-//   bat.stderr.on('data', (err) => {
-//     console.log(err.toString());
-//     event.reply('ipc-example', `${err.toString()}err`);
-//   });
-//   bat.on('exit', (code) => {
-//     event.reply('ipc-example', `${code.toString()}exit`);
-//     console.log(code.toString());
-//   });
-// });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -196,6 +179,7 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+      mainWindow.maximize();
     }
   });
 
@@ -233,6 +217,7 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    mainWindow?.maximize();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

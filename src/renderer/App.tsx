@@ -13,6 +13,7 @@ import React, { useState, useRef, useEffect } from 'react';
 function ConsoleView(): React.JSX.Element {
   const [output, setOutput] = useState<React.JSX.Element[]>([]);
   const [showPassInput, setShowPassInput] = useState(false);
+  const [labUrl, setLabUrl] = useState('');
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
     const consoleDivPass = document.querySelector('.console>.output-pass');
@@ -39,41 +40,64 @@ function ConsoleView(): React.JSX.Element {
     window.electronAPI.askPass((needsPassword: boolean) => {
       setShowPassInput(needsPassword);
     });
+    window.electronAPI.labUrl((labUrlFromMain: string) => {
+      setLabUrl(labUrlFromMain);
+    });
   }
   return (
-    <div className="console file">
-      <p>Command output:</p>
-      <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
-        {output}{' '}
-        <div>
-          {/* Password promt */}
-          {showPassInput ? (
-            <label className="pass" htmlFor="sudoPass">
-              <input type="password" name="sudoPass" />
-              <button
-                type="button"
-                onClick={(event) => {
-                  const clickedButton = event.target;
-                  const passInput: HTMLInputElement | null = (
-                    clickedButton as HTMLElement
-                  ).previousElementSibling as HTMLInputElement;
-                  // console.log(passInput?.value);
-                  window.electronAPI?.password(
-                    (passInput.value as string) || '',
-                  );
-                  setShowPassInput(false);
-                }}
-              >
-                OK
-              </button>
-            </label>
-          ) : (
-            ''
-          )}
-        </div>
+    <div>
+      <div className={labUrl ? 'file' : 'file hidden'}>
+        {labUrl ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                console.log(labUrl);
+                window.open(labUrl);
+              }}
+            >
+              Open Jupyter Lab in default browser
+            </button>
+            <p>{labUrl}</p>
+          </>
+        ) : (
+          ''
+        )}
       </div>
-      <div className={showPassInput ? 'output hidden' : 'output'}>
-        {output}{' '}
+      <div className="console file">
+        <p>Command output:</p>
+        <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
+          {output}{' '}
+          <div>
+            {/* Password promt */}
+            {showPassInput ? (
+              <label className="pass" htmlFor="sudoPass">
+                <input type="password" name="sudoPass" />
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    const clickedButton = event.target;
+                    const passInput: HTMLInputElement | null = (
+                      clickedButton as HTMLElement
+                    ).previousElementSibling as HTMLInputElement;
+                    // console.log(passInput?.value);
+                    window.electronAPI?.password(
+                      (passInput.value as string) || '',
+                    );
+                    setShowPassInput(false);
+                  }}
+                >
+                  OK
+                </button>
+              </label>
+            ) : (
+              ''
+            )}
+          </div>
+        </div>
+        <div className={showPassInput ? 'output hidden' : 'output'}>
+          {output}{' '}
+        </div>
       </div>
     </div>
   );
