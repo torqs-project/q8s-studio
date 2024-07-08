@@ -78,13 +78,15 @@ function ConsoleView(): React.JSX.Element {
     </div>
   );
 }
-
 interface fileButtonProps {
   name: string;
   path: string;
   isDirectory?: boolean;
   openDialog: (isDirectory: boolean) => void;
 }
+/**
+ * A component to display a button for selecting a file or directory.
+ */
 function FileButton({
   name,
   path,
@@ -118,56 +120,6 @@ function Main() {
   const [directoryPath, setDirectoryPath] = useState('');
   const commandRef = useRef<string>('');
 
-  /* const openDirectory = async (mode = 'read') => {
-    // Following code is from:
-    // https://web.dev/patterns/files/open-a-directory#progressive_enhancement
-    // It is used for selecting just a directory
-    // Feature detection. The API needs to be supported
-    // and the app not run in an iframe.
-    const supportsFileSystemAccess =
-      'showDirectoryPicker' in window &&
-      (() => {
-        try {
-          return window.self === window.top;
-        } catch {
-          return false;
-        }
-      })();
-    // If the File System Access API is supported…
-    if (supportsFileSystemAccess) {
-      let directoryStructure;
-      try {
-        // Open the directory.
-        const handle = await window.showDirectoryPicker();
-        // Get the directory structure.
-        directoryStructure = handle;
-        console.log('handle:');
-        console.log(handle);
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          console.error(err.name, err.message);
-        }
-      }
-      return directoryStructure;
-    }
-    // Fallback if the File System Access API is not supported.
-    return new Promise((resolve) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.webkitdirectory = true;
-
-      input.addEventListener('change', () => {
-        const files = Array.from(input.files);
-        resolve(files);
-      });
-      if ('showPicker' in HTMLInputElement.prototype) {
-        input.showPicker();
-      } else {
-        input.click();
-      }
-    });
-  }; */
-
   const openDialog = async (isDirectory = false) => {
     const filePath = await window.electronAPI.openFile(isDirectory);
     if (filePath) {
@@ -187,14 +139,6 @@ function Main() {
   if (kubeconfigPath && directoryPath) {
     // Generate command
     commandRef.current = `docker run --rm --name q8studio -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-    // Send command through IPC
-    // window.electron.ipcRenderer.once('ipc-example', (arg) => {
-    //   console.log(arg);
-    // });
-    // window.electron.ipcRenderer.sendMessage('ipc-example', [
-    //   commandRef.current,
-    // ]);
-    // window.electron.ipcRenderer.send('test', 'test');
   }
   return (
     <div>
@@ -213,22 +157,6 @@ function Main() {
           isDirectory
           openDialog={openDialog}
         />
-        {/* Uses webkitdirectory property, which is non-standard */}
-        {/* <div className="file">
-          <label className="testi" htmlFor="dir">
-            {directoryPath
-              ? `Selected folder: ${directoryName}`
-              : 'Choose a workspace folder...'}
-            <button
-              name="dir"
-              id="dir"
-              className="visually-hidden"
-              webkitdirectory="true"
-              onChange={() => openDialog(true)}
-            />
-          </label>
-          {`Path: ${directoryPath || 'No dir path'}`}
-        </div> */}
         {commandRef.current ? (
           <div className="file cmd">
             <h2>Command to run:</h2>
@@ -237,11 +165,10 @@ function Main() {
         ) : (
           ''
         )}
-        <div>
+        <div className="file">
           <button
             disabled={!(kubeconfigPath && directoryPath)}
             type="button"
-            // onClick={openDialog}
             onClick={() => {
               // Generate command
               // commandRef.current = `docker run --name test -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
@@ -261,26 +188,6 @@ function Main() {
           </button>
         </div>
         <ConsoleView />
-
-        {/* Here a version which is standard, but can't find the path for security reasons */}
-        {/* <div className="file">
-          <button
-            type="button"
-            onClick={async () => {
-              const directoryHandle = await openDirectory();
-              console.log(directoryHandle.values());
-              console.log(directoryHandle.name);
-              setDirectoryName(directoryHandle.name);
-              setDirectoryPath(directoryHandle.path);
-              console.log(directoryPath);
-            }}
-          >
-            {directoryName
-              ? `Selected directory: ${directoryName}`
-              : 'Choose workspace directory...'}
-          </button>
-          {directoryPath?directoryPath:"No dir path"}
-        </div> */}
       </div>
     </div>
   );

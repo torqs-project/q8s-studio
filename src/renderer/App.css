@@ -6,7 +6,8 @@
   position: relative;
   color: black;
   overflow: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
+  width: 100vw;
   /* height: 100vh; */
   /* background: linear-gradient(
     200.96deg,
