@@ -39,15 +39,13 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   if (isDirectory) {
     fileOrDir = 'openDirectory';
   }
-  console.log(isDirectory);
-  console.log(fileOrDir);
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: [fileOrDir],
   });
   if (!canceled) {
     return filePaths[0];
   }
-  return [];
+  return '';
 }
 
 ipcMain.handle('openFile', (event, arg) => {

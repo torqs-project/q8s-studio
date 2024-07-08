@@ -170,15 +170,17 @@ function Main() {
 
   const openDialog = async (isDirectory = false) => {
     const filePath = await window.electronAPI.openFile(isDirectory);
-    const regex = /\/|\\/;
-    const pathArray = filePath.split(regex);
-    const name = pathArray[pathArray.length - 1];
-    if (isDirectory) {
-      setDirectoryName(name);
-      setDirectoryPath(filePath);
-    } else {
-      setKubeconfigName(name);
-      setKubeconfigPath(filePath);
+    if (filePath) {
+      const regex = /\/|\\/;
+      const pathArray = filePath.split(regex);
+      const name = pathArray[pathArray.length - 1];
+      if (isDirectory) {
+        setDirectoryName(name);
+        setDirectoryPath(filePath);
+      } else {
+        setKubeconfigName(name);
+        setKubeconfigPath(filePath);
+      }
     }
   };
   // If both config file and directory are selected, generate the command
