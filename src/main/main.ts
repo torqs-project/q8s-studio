@@ -33,6 +33,7 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+const allChildProcessess: number[] = [];
 
 async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
@@ -52,7 +53,6 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
-const allChildProcessess: number[] = [];
 ipcMain.handle('runCommand', (_event, givenCommand) => {
   // Split command to list of arguments
   const splitted = givenCommand.split(' ');
@@ -60,38 +60,38 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
   const cmd = splitted[0];
   // Get the arguments
   const cmdArgs = splitted.slice(1);
-  let bat: ChildProcess;
+  let dockerProcess: ChildProcess;
+  // Ask for sudo password if on linux
   if (process.platform === 'linux') {
     let command = ['-S']; // Use -S to ask the sudo password and show it in the output
     command = command.concat(splitted);
-    console.log(`AFTER CONCAT ${command}`);
-    bat = require('child_process').spawn('sudo', command);
+    dockerProcess = require('child_process').spawn('sudo', command);
   } else {
-    bat = require('child_process').spawn(cmd, cmdArgs);
+    dockerProcess = require('child_process').spawn(cmd, cmdArgs);
   }
-  if (bat.pid) {
-    allChildProcessess.push(bat.pid); // Add child process to list of all child processes for killing when exiting app
+  if (dockerProcess.pid) {
+    allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
   }
   // Handle stdios
   // For some reason output from docker goes to stderr instead of stdout.
-  bat.stdout?.on('data', (data: Buffer) => {
+  dockerProcess.stdout?.on('data', (data: Buffer) => {
     mainWindow?.webContents.send(
       'cli-output',
       `OUTPUT DATA CP: ${data.toString()}`,
     );
     return `${data.toString()}data`;
   });
-  bat.stderr?.on('data', (err: Buffer) => {
-    // if err has "password in the string, use ask pass"
+  dockerProcess.stderr?.on('data', (err: Buffer) => {
     if (err.toString().includes('password')) {
       // Send message to renderer to include a password input
       mainWindow?.webContents.send('ask-pass', true);
-      // Handle the returning password from renderer
+      // Pass the returning password from renderer to the child process
       ipcMain.on('pass', (_event2, pwd = '') => {
-        bat.stdin?.write(`${pwd}\n`);
-        bat.stdin?.end();
+        dockerProcess.stdin?.write(`${pwd}\n`);
+        dockerProcess.stdin?.end();
       });
     }
+    // Parse and handle URL
     if (err.toString().includes('URL')) {
       const stringAsWords = err.toString().split(' ');
       stringAsWords.forEach((possibleURL) => {
@@ -111,18 +111,17 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
     } else {
       mainWindow?.webContents.send('cli-output', `${err.toString()}`);
     }
-
     return `${err.toString()}err`;
   });
-  bat.on('exit', (code: Buffer) => {
+  dockerProcess.on('exit', (code: Buffer) => {
     mainWindow?.webContents.send(
       'cli-output',
       `EXIT CODE CP: ${code.toString()}`,
     );
-    return `${code.toString()}exit`;
   });
 });
 
+// CODE FROM BOILERPLATE
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -204,10 +203,6 @@ const createWindow = async () => {
   // eslint-disable-next-line
   new AppUpdater();
 };
-
-/**
- * Add event listeners...
- */
 
 app.on('window-all-closed', () => {
   allChildProcessess.forEach((childPID: number) => {
