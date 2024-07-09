@@ -52,6 +52,7 @@ ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
 
+const allChildProcessess: number[] = [];
 ipcMain.handle('runCommand', (_event, givenCommand) => {
   // Split command to list of arguments
   const splitted = givenCommand.split(' ');
@@ -67,6 +68,9 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
     bat = require('child_process').spawn('sudo', command);
   } else {
     bat = require('child_process').spawn(cmd, cmdArgs);
+  }
+  if (bat.pid) {
+    allChildProcessess.push(bat.pid); // Add child process to list of all child processes for killing when exiting app
   }
   // Handle stdios
   // For some reason output from docker goes to stderr instead of stdout.
@@ -206,6 +210,9 @@ const createWindow = async () => {
  */
 
 app.on('window-all-closed', () => {
+  allChildProcessess.forEach((childPID: number) => {
+    process.kill(childPID);
+  });
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
