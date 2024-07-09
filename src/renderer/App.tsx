@@ -14,6 +14,7 @@ function ConsoleView(): React.JSX.Element {
   const [output, setOutput] = useState<React.JSX.Element[]>([]);
   const [showPassInput, setShowPassInput] = useState(false);
   const [labUrl, setLabUrl] = useState('');
+  const [pKey, setPKey] = useState(0);
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
     const consoleDivPass = document.querySelector('.console>.output-pass');
@@ -34,7 +35,8 @@ function ConsoleView(): React.JSX.Element {
   // Add a listener to the channel cli-output
   if (window.electronAPI) {
     window.electronAPI.on('cli-output', (_event, data) => {
-      const newline: React.JSX.Element = <p>{data}</p>;
+      setPKey(pKey + 1);
+      const newline: React.JSX.Element = <p key={pKey}>{data}</p>;
       setOutput([...output, newline]);
     });
     window.electronAPI.askPass((needsPassword: boolean) => {
@@ -71,8 +73,9 @@ function ConsoleView(): React.JSX.Element {
           <div>
             {/* Password promt */}
             {showPassInput ? (
-              <label className="pass" htmlFor="sudoPass">
-                <input type="password" name="sudoPass" />
+              // eslint-disable-next-line jsx-a11y/label-has-associated-control
+              <label className="pass">
+                <input type="password" />
                 <button
                   type="button"
                   onClick={(event) => {
