@@ -3,12 +3,16 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
  #root {
-  position: relative;
+  /* position: relative; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   color: black;
   overflow: auto;
   overflow-y: auto;
   width: 100vw;
-  /* height: 100vh; */
+  height: 100vh;
   /* background: linear-gradient(
     200.96deg,
     #fedc2a -29.09%,
@@ -31,6 +35,13 @@ footer {
   justify-content: center;
   align-items: center;
   width: 100%;
+  .navigatorButtons{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    position: absolute;
+    left: 0;
+  }
 }
 
 /* #top {
@@ -126,8 +137,10 @@ a:hover {
   background-color: black;
   color: white;
   width: 75vw;
-  height: 30vh;
+  min-height: 30vh;
+  max-height: 55vh;
   overflow: scroll;
+  transition: all ease-in 0.1s;
   >p:first-child{
     font-weight: bold;
     font-size: 1.5rem;

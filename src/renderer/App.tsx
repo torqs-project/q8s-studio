@@ -1,5 +1,11 @@
 /* eslint-disable no-console */
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+  useNavigate,
+} from 'react-router-dom';
 import './App.css';
 import React, { useState, useRef } from 'react';
 import ConsoleView from './components/ConsoleView';
@@ -11,7 +17,7 @@ function Main() {
   const [directoryName, setDirectoryName] = useState('');
   const [directoryPath, setDirectoryPath] = useState('');
   const commandRef = useRef<string>('');
-
+  const navigate = useNavigate();
   /**
    * Fires the event to open a file dialog and sets the selected file path
    *
@@ -75,6 +81,7 @@ function Main() {
                 .runCommand(commandRef.current)
                 .then((result: any) => {
                   console.log(result);
+                  navigate('clg');
                   return result;
                 })
                 .catch((err: any) => {
@@ -85,9 +92,44 @@ function Main() {
             Run command
           </button>
         </div>
-        <ConsoleView />
       </div>
     </div>
+  );
+}
+
+function BasicLayout() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <footer id="top">
+        <h1>Qubernetes Studio</h1>
+        <div className="navigatorButtons">
+          <button type="button" onClick={() => navigate('/')}>
+            Home
+          </button>
+          <button type="button" onClick={() => navigate('clg')}>
+            Console output
+          </button>
+        </div>
+      </footer>
+      <div>
+        <Outlet />
+      </div>
+      <footer id="bottom">
+        <a
+          href="https://github.com/torqs-project/q8s-studio"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <button type="button">
+            <span role="img" aria-label="books">
+              📚
+            </span>
+            Documentation
+          </button>
+        </a>
+      </footer>
+    </>
   );
 }
 
@@ -95,7 +137,10 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Main />} />
+        <Route path="/" element={<BasicLayout />}>
+          <Route path="/" element={<Main />} />
+          <Route path="/clg" element={<ConsoleView />} />
+        </Route>
       </Routes>
     </Router>
   );
