@@ -118,6 +118,12 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
       'cli-output',
       `EXIT CODE CP: ${code.toString()}`,
     );
+    if (dockerProcess.pid) {
+      const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
+      if (remIndex > -1) {
+        allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+      }
+    }
   });
 });
 
