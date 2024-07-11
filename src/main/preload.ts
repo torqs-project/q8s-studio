@@ -21,7 +21,7 @@ const electronAPI = {
    * @param command the command to run
    * @returns the output of the command
    */
-  runCommand: (command: string) => {
+  runCommand: (command: string | null) => {
     return ipcRenderer.invoke('runCommand', command);
   },
   /**

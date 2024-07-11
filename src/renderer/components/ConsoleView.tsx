@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useConsole } from '../contexts/ConsoleContext';
 
 /**
  * A component for showing the console output
@@ -8,10 +9,10 @@ import React, { useEffect, useState } from 'react';
  * @returns {React.JSX.Element}
  */
 function ConsoleView(): React.JSX.Element {
-  const [output, setOutput] = useState<React.JSX.Element[]>([]);
+  const { output, setOutput, pKey, setPKey } = useConsole();
   const [showPassInput, setShowPassInput] = useState(false);
   const [labUrl, setLabUrl] = useState('');
-  const [pKey, setPKey] = useState(0);
+
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
     // const consoleDivPass = document.querySelector('.console>.output-pass');
