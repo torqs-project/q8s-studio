@@ -1,16 +1,36 @@
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useNavigationState } from '../contexts/ConsoleContext';
 
+/**
+ * A layout component that contains the top and bottom footers for the app.
+ */
 function BasicLayout() {
   const navigate = useNavigate();
+  const { navState, setNavState } = useNavigationState();
+  console.log(navState);
   return (
     <>
       <footer id="top">
         <h1>Qubernetes Studio</h1>
         <div className="navigatorButtons">
-          <button type="button" onClick={() => navigate('/')}>
+          <button
+            className={navState === 'home' ? 'selected' : ''}
+            type="button"
+            onClick={() => {
+              navigate('/');
+              setNavState('home');
+            }}
+          >
             Home
           </button>
-          <button type="button" onClick={() => navigate('clg')}>
+          <button
+            className={navState === 'console' ? 'selected' : ''}
+            type="button"
+            onClick={() => {
+              navigate('/clg');
+              setNavState('console');
+            }}
+          >
             Console output
           </button>
         </div>
@@ -20,7 +40,7 @@ function BasicLayout() {
       </div>
       <footer id="bottom">
         <a
-          href="https://github.com/torqs-project/q8s-studio"
+          href="https://github.com/torqs-project/q8s-studio?tab=readme-ov-file#q8s-studio"
           target="_blank"
           rel="noreferrer"
         >

@@ -10,7 +10,11 @@ import React, { useState, useRef } from 'react';
 import ConsoleView from './components/ConsoleView';
 import FileButton from './components/FileButton';
 import BasicLayout from './components/BasicLayout';
-import { ConsoleProvider } from './contexts/ConsoleContext';
+import {
+  ConsoleProvider,
+  NavigationStateProvider,
+  useNavigationState,
+} from './contexts/ConsoleContext';
 
 interface MainProps {
   kubeconfigName: string;
@@ -21,6 +25,9 @@ interface MainProps {
   openDialog: (isDirectory: boolean) => Promise<void>;
 }
 
+/**
+ * Includes the main content of the application.
+ */
 function Main({
   kubeconfigName,
   kubeconfigPath,
@@ -30,6 +37,7 @@ function Main({
   openDialog,
 }: MainProps) {
   const navigate = useNavigate();
+  const { navState, setNavState } = useNavigationState();
   return (
     <div>
       <div className="content">
@@ -48,38 +56,44 @@ function Main({
           openDialog={openDialog}
         />
         {commandRef.current ? (
-          <div className="file cmd">
-            <h2>Command to run:</h2>
-            <p>{commandRef.current}</p>
-          </div>
+          <>
+            <div className="file cmd">
+              <h2>Command to run:</h2>
+              <p>{commandRef.current}</p>
+            </div>
+            <div className="file">
+              <button
+                type="button"
+                onClick={() => {
+                  window.electronAPI
+                    .runCommand(commandRef.current)
+                    .then((result: any) => {
+                      console.log(result);
+                      navigate('clg');
+                      setNavState('console');
+                      return result;
+                    })
+                    .catch((err: any) => {
+                      console.log(err);
+                    });
+                }}
+              >
+                Run command
+              </button>
+            </div>
+          </>
         ) : (
           ''
         )}
-        <div className="file">
-          <button
-            disabled={!(kubeconfigPath && directoryPath)}
-            type="button"
-            onClick={() => {
-              window.electronAPI
-                .runCommand(commandRef.current)
-                .then((result: any) => {
-                  console.log(result);
-                  navigate('clg');
-                  return result;
-                })
-                .catch((err: any) => {
-                  console.log(err);
-                });
-            }}
-          >
-            Run command
-          </button>
-        </div>
       </div>
     </div>
   );
 }
 
+/**
+ * Qubernetes Studio App.
+ * Handles file and directory states and renders the main layout.
+ */
 export default function App() {
   const [kubeconfigName, setKubeconfigName] = useState('');
   const [kubeconfigPath, setKubeconfigPath] = useState('');
@@ -87,6 +101,9 @@ export default function App() {
   const [directoryPath, setDirectoryPath] = useState('');
   const commandRef = useRef<string>('');
 
+  /**
+   * Opens a dialog to select a file or directory.
+   */
   const openDialog = async (isDirectory: boolean = false) => {
     const filePath = await window.electronAPI.openFile(isDirectory);
     if (filePath) {
@@ -102,33 +119,34 @@ export default function App() {
       }
     }
   };
-
+  // Genetare the command to run when configuration file and workspace folder have been selected.
   if (kubeconfigPath && directoryPath) {
     commandRef.current = `docker run --rm --name q8studio -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
   }
-
   return (
     <ConsoleProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<BasicLayout />}>
-            <Route
-              path="/"
-              element={
-                <Main
-                  kubeconfigName={kubeconfigName}
-                  kubeconfigPath={kubeconfigPath}
-                  directoryName={directoryName}
-                  directoryPath={directoryPath}
-                  commandRef={commandRef}
-                  openDialog={openDialog}
-                />
-              }
-            />
-            <Route path="/clg" element={<ConsoleView />} />
-          </Route>
-        </Routes>
-      </Router>
+      <NavigationStateProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<BasicLayout />}>
+              <Route
+                path="/"
+                element={
+                  <Main
+                    kubeconfigName={kubeconfigName}
+                    kubeconfigPath={kubeconfigPath}
+                    directoryName={directoryName}
+                    directoryPath={directoryPath}
+                    commandRef={commandRef}
+                    openDialog={openDialog}
+                  />
+                }
+              />
+              <Route path="/clg" element={<ConsoleView />} />
+            </Route>
+          </Routes>
+        </Router>
+      </NavigationStateProvider>
     </ConsoleProvider>
   );
 }

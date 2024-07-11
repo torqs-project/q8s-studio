@@ -38,10 +38,24 @@ footer {
   .navigatorButtons{
     display: flex;
     flex-direction: row;
-    width: 100%;
+    /* width: 100%; */
     position: absolute;
     left: 0;
+    padding-left: 0.2em;
+    padding-right: 2em;
+    /* border-bottom: 2px solid gainsboro; */
+    button {
+      margin:0 0.5em;
+      padding: 0.25em 0;
+      box-shadow: none;
+      border-radius: 0%;
+    }
   }
+  .selected{
+    border-bottom: 3px solid rgb(0, 0, 0);
+    border-spacing: 1em;
+    padding: 0.5em 0
+   }
 }
 
 /* #top {

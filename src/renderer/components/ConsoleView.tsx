@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useConsole } from '../contexts/ConsoleContext';
+import { useConsole, useNavigationState } from '../contexts/ConsoleContext';
 
 /**
  * A component for showing the console output
@@ -10,27 +10,28 @@ import { useConsole } from '../contexts/ConsoleContext';
  */
 function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey } = useConsole();
+  const { navState, setNavState } = useNavigationState();
   const [showPassInput, setShowPassInput] = useState(false);
   const [labUrl, setLabUrl] = useState('');
 
+  useEffect(() => {
+    console.log('rendered consoleView');
+    console.log(`current state ${navState}`);
+    // setNavState('console');
+    console.log(`current state ${navState}`);
+  }, []);
+
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
-    // const consoleDivPass = document.querySelector('.console>.output-pass');
-    // // console.log(consoleDivPass);
-    // consoleDivPass?.scrollIntoView({
-    //   behavior: 'smooth',
-    //   block: 'end',
-    //   inline: 'nearest',
-    // });
     const consoleDiv = document.querySelector('.console>.output');
-    // console.log(consoleDiv);
     consoleDiv?.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
       inline: 'nearest',
     });
   }, [output]);
-  // Add a listener to the channel cli-output
+  // Add a listener to the channel cli-output,
+  // listens to the main process for output
   if (window.electronAPI) {
     window.electronAPI.on('cli-output', (_event, data) => {
       setPKey(pKey + 1);
@@ -46,6 +47,7 @@ function ConsoleView(): React.JSX.Element {
   }
   return (
     <div>
+      {/* Button for opening jupyter lab link */}
       <div className={labUrl ? 'file' : 'file hidden'}>
         {labUrl ? (
           <>
@@ -95,6 +97,7 @@ function ConsoleView(): React.JSX.Element {
             )}
           </div>
         </div>
+        {/* Console without password prompt */}
         <div className={showPassInput ? 'output hidden' : 'output'}>
           {output}{' '}
         </div>
