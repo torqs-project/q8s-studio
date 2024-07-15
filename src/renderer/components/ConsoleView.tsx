@@ -52,7 +52,21 @@ export default function ConsoleView(): React.JSX.Element {
               >
                 Open Jupyter Lab in default browser
               </button>
-              <button className="stopBtn" type="button">
+              <button
+                className="stopBtn"
+                type="button"
+                onClick={() => {
+                  window.electronAPI
+                    .killProcess()
+                    .then((msg) => {
+                      console.log(msg);
+                      return msg;
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                }}
+              >
                 {' '}
                 Stop process{' '}
               </button>

@@ -35,6 +35,12 @@ class AppUpdater {
 let mainWindow: BrowserWindow | null = null;
 const allChildProcessess: number[] = [];
 
+function killAllProcessess(processes: number[]) {
+  processes.forEach((childPID: number) => {
+    process.kill(childPID);
+  });
+}
+
 async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
   if (isDirectory) {
@@ -51,6 +57,11 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
 
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
+});
+
+ipcMain.handle('killProcess', () => {
+  killAllProcessess(allChildProcessess);
+  return 'All child processes killed';
 });
 
 ipcMain.handle('runCommand', (_event, givenCommand) => {
@@ -211,9 +222,7 @@ const createWindow = async () => {
 };
 
 app.on('window-all-closed', () => {
-  allChildProcessess.forEach((childPID: number) => {
-    process.kill(childPID);
-  });
+  killAllProcessess(allChildProcessess);
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {

@@ -25,6 +25,13 @@ const electronAPI = {
     return ipcRenderer.invoke('runCommand', command);
   },
   /**
+   * Kill the child process and return the exit message.
+   * @returns Message for killing the process
+   */
+  killProcess: () => {
+    return ipcRenderer.invoke('killProcess');
+  },
+  /**
    * Ask the user for a password
    * @param callback the callback to call with the password
    * @returns nothing
