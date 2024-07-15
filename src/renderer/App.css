@@ -161,6 +161,10 @@ a:hover {
     flex-grow: 1;
     color: red;
   }
+  .infoP{
+    position: relative;
+    margin: auto;
+  }
 }
 .console{
   background-color: black;

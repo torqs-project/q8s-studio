@@ -40,10 +40,10 @@ export default function ConsoleView(): React.JSX.Element {
   return (
     <div>
       {/* Button for opening jupyter lab link */}
-      <div className={labUrl ? 'file' : 'file hidden'}>
-        {labUrl ? (
-          <>
-            <div className="processBtns">
+      <div className="file">
+        <div className="processBtns">
+          {labUrl ? (
+            <>
               <button
                 type="button"
                 onClick={() => {
@@ -59,23 +59,24 @@ export default function ConsoleView(): React.JSX.Element {
                   window.electronAPI
                     .killProcess()
                     .then((msg) => {
-                      console.log(msg);
+                      setLabUrl('');
                       return msg;
                     })
                     .catch((err) => {
-                      console.log(err);
+                      return err;
                     });
                 }}
               >
                 {' '}
                 Stop process{' '}
               </button>
-            </div>
-            <p>{labUrl}</p>
-          </>
-        ) : (
-          ''
-        )}
+            </>
+          ) : (
+            // ''
+            <p className="infoP">No ongoing processes</p>
+          )}
+        </div>
+        <p>{labUrl}</p>
       </div>
       <div className="console file">
         <p>Command output:</p>
