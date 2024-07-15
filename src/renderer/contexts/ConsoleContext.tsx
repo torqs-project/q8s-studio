@@ -37,7 +37,7 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
         className="clearBtn"
         type="button"
         onClick={() => {
-          setOutput([]);
+          setOutput([output[0]]);
         }}
       >
         Clear output
