@@ -30,7 +30,20 @@ export const useConsole = () => {
 // ConsoleProvider component
 export function ConsoleProvider({ children }: { children: ReactNode }) {
   // State for the output
-  const [output, setOutput] = useState<React.JSX.Element[]>([]);
+  const [output, setOutput] = useState<React.JSX.Element[]>([
+    <div key={1029481902841234} className="test">
+      <p>Command output:</p>{' '}
+      <button
+        className="clearBtn"
+        type="button"
+        onClick={() => {
+          setOutput([]);
+        }}
+      >
+        Clear output
+      </button>
+    </div>,
+  ]);
   // State for the pKey
   const [pKey, setPKey] = useState(0);
   // Memoize the value to avoid unnecessary re-renders

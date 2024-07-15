@@ -79,7 +79,6 @@ export default function ConsoleView(): React.JSX.Element {
         <p>{labUrl}</p>
       </div>
       <div className="console file">
-        <p>Command output:</p>
         <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
           {output}{' '}
           <div>

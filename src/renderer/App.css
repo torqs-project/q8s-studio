@@ -189,6 +189,27 @@ a:hover {
       transform: scale(1.15);
     }
   }
+  .test{
+    position: sticky;
+    top: 0;
+    padding-top: 0.5em;
+    /* padding-bottom: 0.5em; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: black;
+
+    /* align-items: center; */
+    /* column-gap: 0.5em */
+  }
+  .clearBtn{
+    /* position: sticky; */
+    left: 100%;
+    /* width: 5em; */
+    /* right: 0; */
+    /* top: 0.5em; */
+    margin-right: 0.5em
+  }
 }
 
 .hidden{
