@@ -8,7 +8,7 @@ import { useConsole } from '../contexts/ConsoleContext';
  * If password is needed, the prompt is shown for the user and password is forwarded to the main process.
  * @returns {React.JSX.Element}
  */
-function ConsoleView(): React.JSX.Element {
+export default function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey } = useConsole();
   const [showPassInput, setShowPassInput] = useState(false);
   const [labUrl, setLabUrl] = useState('');
@@ -97,5 +97,3 @@ function ConsoleView(): React.JSX.Element {
     </div>
   );
 }
-
-export default ConsoleView;

@@ -12,7 +12,7 @@ import FileButton from './components/FileButton';
 import BasicLayout from './components/BasicLayout';
 import { ConsoleProvider } from './contexts/ConsoleContext';
 
-interface MainProps {
+export interface MainProps {
   kubeconfigName: string;
   kubeconfigPath: string;
   directoryName: string;
@@ -24,7 +24,7 @@ interface MainProps {
 /**
  * Includes the main content of the application.
  */
-function Main({
+export function Main({
   kubeconfigName,
   kubeconfigPath,
   directoryName,
