@@ -1,13 +1,14 @@
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useNavigationState } from '../contexts/ConsoleContext';
-
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
 function BasicLayout() {
   const navigate = useNavigate();
-  const { navState, setNavState } = useNavigationState();
-  console.log(navState);
+  // const { navState, setNavState } = useNavigationState();
+  let navState = useLocation().state?.navState;
+  if (!navState) {
+    navState = 'home';
+  }
   return (
     <>
       <footer id="top">
@@ -17,8 +18,7 @@ function BasicLayout() {
             className={navState === 'home' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/');
-              setNavState('home');
+              navigate('/', { state: { navState: 'home' } });
             }}
           >
             Home
@@ -27,8 +27,7 @@ function BasicLayout() {
             className={navState === 'console' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/clg');
-              setNavState('console');
+              navigate('/clg', { state: { navState: 'console' } });
             }}
           >
             Console output

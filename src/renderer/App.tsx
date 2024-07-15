@@ -10,11 +10,7 @@ import React, { useState, useRef } from 'react';
 import ConsoleView from './components/ConsoleView';
 import FileButton from './components/FileButton';
 import BasicLayout from './components/BasicLayout';
-import {
-  ConsoleProvider,
-  NavigationStateProvider,
-  useNavigationState,
-} from './contexts/ConsoleContext';
+import { ConsoleProvider } from './contexts/ConsoleContext';
 
 interface MainProps {
   kubeconfigName: string;
@@ -37,7 +33,6 @@ function Main({
   openDialog,
 }: MainProps) {
   const navigate = useNavigate();
-  const { navState, setNavState } = useNavigationState();
   return (
     <div>
       <div className="content">
@@ -69,8 +64,8 @@ function Main({
                     .runCommand(commandRef.current)
                     .then((result: any) => {
                       console.log(result);
-                      navigate('clg');
-                      setNavState('console');
+                      navigate('clg', { state: { navState: 'console' } });
+                      // setNavState('console');
                       return result;
                     })
                     .catch((err: any) => {
@@ -125,28 +120,26 @@ export default function App() {
   }
   return (
     <ConsoleProvider>
-      <NavigationStateProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<BasicLayout />}>
-              <Route
-                path="/"
-                element={
-                  <Main
-                    kubeconfigName={kubeconfigName}
-                    kubeconfigPath={kubeconfigPath}
-                    directoryName={directoryName}
-                    directoryPath={directoryPath}
-                    commandRef={commandRef}
-                    openDialog={openDialog}
-                  />
-                }
-              />
-              <Route path="/clg" element={<ConsoleView />} />
-            </Route>
-          </Routes>
-        </Router>
-      </NavigationStateProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<BasicLayout />}>
+            <Route
+              path="/"
+              element={
+                <Main
+                  kubeconfigName={kubeconfigName}
+                  kubeconfigPath={kubeconfigPath}
+                  directoryName={directoryName}
+                  directoryPath={directoryPath}
+                  commandRef={commandRef}
+                  openDialog={openDialog}
+                />
+              }
+            />
+            <Route path="/clg" element={<ConsoleView />} />
+          </Route>
+        </Routes>
+      </Router>
     </ConsoleProvider>
   );
 }

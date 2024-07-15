@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useConsole, useNavigationState } from '../contexts/ConsoleContext';
+import { useConsole } from '../contexts/ConsoleContext';
 
 /**
  * A component for showing the console output
@@ -10,16 +10,8 @@ import { useConsole, useNavigationState } from '../contexts/ConsoleContext';
  */
 function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey } = useConsole();
-  const { navState, setNavState } = useNavigationState();
   const [showPassInput, setShowPassInput] = useState(false);
   const [labUrl, setLabUrl] = useState('');
-
-  useEffect(() => {
-    console.log('rendered consoleView');
-    console.log(`current state ${navState}`);
-    // setNavState('console');
-    console.log(`current state ${navState}`);
-  }, []);
 
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
