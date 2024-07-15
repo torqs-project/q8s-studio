@@ -147,13 +147,29 @@ a:hover {
   opacity: 1;
   text-decoration: none;
 }
+.processBtns{
+  display: flex;
+  flex-direction: row;
+  column-gap: 1em;
+  button{
+    flex-grow: 10;
+  }
+  .stopBtn{
+    /* background-color: red; */
+    border: 1px solid rgb(255, 0, 0);
+    color: rgb(255, 0, 0);
+    flex-grow: 1;
+    color: red;
+  }
+}
 .console{
   background-color: black;
   color: white;
   width: 75vw;
   min-height: 30vh;
   max-height: 55vh;
-  overflow: scroll;
+  border-radius: 10px;
+  overflow: auto;
   transition: all ease-in 0.1s;
   >p:first-child{
     font-weight: bold;

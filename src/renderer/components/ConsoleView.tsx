@@ -43,14 +43,20 @@ export default function ConsoleView(): React.JSX.Element {
       <div className={labUrl ? 'file' : 'file hidden'}>
         {labUrl ? (
           <>
-            <button
-              type="button"
-              onClick={() => {
-                window.open(labUrl);
-              }}
-            >
-              Open Jupyter Lab in default browser
-            </button>
+            <div className="processBtns">
+              <button
+                type="button"
+                onClick={() => {
+                  window.open(labUrl);
+                }}
+              >
+                Open Jupyter Lab in default browser
+              </button>
+              <button className="stopBtn" type="button">
+                {' '}
+                Stop process{' '}
+              </button>
+            </div>
             <p>{labUrl}</p>
           </>
         ) : (
