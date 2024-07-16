@@ -99,7 +99,8 @@ export default function ConsoleView(): React.JSX.Element {
             {showPassInput ? (
               // eslint-disable-next-line jsx-a11y/label-has-associated-control
               <label className="pass">
-                <input type="password" />
+                {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+                <input type="password" autoFocus />
                 <button
                   type="button"
                   onClick={(event) => {
