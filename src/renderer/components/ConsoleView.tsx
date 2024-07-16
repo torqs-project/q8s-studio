@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useConsole } from '../contexts/ConsoleContext';
+import xmarkSolid from '../../../assets/icons/stop.svg';
 
 /**
  * A component for showing the console output
@@ -31,6 +32,7 @@ export default function ConsoleView(): React.JSX.Element {
       setOutput([...output, newline]);
     });
     window.electronAPI.askPass((needsPassword: boolean) => {
+      console.log('askpass');
       setShowPassInput(needsPassword);
     });
     window.electronAPI.labUrl((labUrlFromMain: string) => {
@@ -67,8 +69,7 @@ export default function ConsoleView(): React.JSX.Element {
                     });
                 }}
               >
-                {' '}
-                Stop process{' '}
+                <img src={xmarkSolid} alt="stop" /> Stop process{' '}
               </button>
             </>
           ) : (
@@ -79,6 +80,18 @@ export default function ConsoleView(): React.JSX.Element {
         <p>{labUrl}</p>
       </div>
       <div className="console file">
+        <div className="console-header">
+          <p>Command output</p>{' '}
+          <button
+            className="clearBtn"
+            type="button"
+            onClick={() => {
+              setOutput([]);
+            }}
+          >
+            Clear output
+          </button>
+        </div>
         <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
           {output}{' '}
           <div>

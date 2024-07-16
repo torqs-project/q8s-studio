@@ -94,6 +94,7 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
   });
   dockerProcess.stderr?.on('data', (err: Buffer) => {
     if (err.toString().includes('password')) {
+      console.log("need password");
       // Send message to renderer to include a password input
       mainWindow?.webContents.send('ask-pass', true);
       // Pass the returning password from renderer to the child process

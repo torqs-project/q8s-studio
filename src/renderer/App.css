@@ -160,6 +160,10 @@ a:hover {
     color: rgb(255, 0, 0);
     flex-grow: 1;
     color: red;
+    padding-left: 10px;
+    img {
+      margin-right: 10px;
+    };
   }
   .infoP{
     position: relative;
@@ -185,31 +189,34 @@ a:hover {
   }
   .output-pass{
     display: flex;
+    margin-top: 1.2em;
     button:hover{
       transform: scale(1.15);
     }
   }
-  .test{
+  .console-header{
     position: sticky;
     top: 0;
     padding-top: 0.5em;
-    /* padding-bottom: 0.5em; */
+    padding-bottom: 0.5em;
+    /* border-bottom: 2px solid white; */
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     background-color: black;
-
+    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
+    0px 18px 50px -4px rgba(0, 0, 0, 0.71);
     /* align-items: center; */
     /* column-gap: 0.5em */
   }
   .clearBtn{
     /* position: sticky; */
+    font-size:medium;
     left: 100%;
-    /* width: 5em; */
-    /* right: 0; */
-    /* top: 0.5em; */
-    margin-right: 0.5em
-  }
+    padding-left: none;
+    margin-right: 0.5em;
+  };
 }
 
 .hidden{
