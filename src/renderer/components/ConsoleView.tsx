@@ -10,9 +10,8 @@ import xmarkSolid from '../../../assets/icons/stop.svg';
  * @returns {React.JSX.Element}
  */
 export default function ConsoleView(): React.JSX.Element {
-  const { output, setOutput, pKey, setPKey } = useConsole();
+  const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
   const [showPassInput, setShowPassInput] = useState(false);
-  const [labUrl, setLabUrl] = useState('');
 
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
@@ -44,6 +43,7 @@ export default function ConsoleView(): React.JSX.Element {
       {/* Button for opening jupyter lab link */}
       <div className="file">
         <div className="processBtns">
+          {/* {console.log(labUrl)} */}
           {labUrl ? (
             <>
               <button
