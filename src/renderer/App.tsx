@@ -1,30 +1,13 @@
 /* eslint-disable no-console */
-import {
-  MemoryRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from 'react-router-dom';
+import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import React, { useState, useRef } from 'react';
 import ConsoleView from './components/ConsoleView';
-import FileButton from './components/FileButton';
 import BasicLayout from './components/BasicLayout';
 import { ConsoleProvider } from './contexts/ConsoleContext';
-import ConfigurationView from './components/ConfigurationView';
-
-export interface MainProps {
-  kubeconfigName: string;
-  kubeconfigPath: string;
-  directoryName: string;
-  directoryPath: string;
-  commandRef: React.RefObject<string>;
-  openDialog: (isDirectory: boolean) => Promise<void>;
-}
 
 /**
  * Qubernetes Studio App.
- * Handles file and directory states and renders the main layout.
+ * Handles the routing and provides the ConsoleProvider.
  */
 export default function App() {
   return (

@@ -96,7 +96,7 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   }
 }
 
-button{
+button, .tile{
   background-color: white;
   display: flex;
   justify-content: center;
@@ -113,7 +113,7 @@ button{
 
 }
 
-button:hover {
+button:hover, .tile:hover {
   transform: scale(1.05);
   opacity: 1;
 }
@@ -221,4 +221,14 @@ a:hover {
 
 .hidden{
   display: none !important;
+}
+
+.tile {
+  width: 30vw;
+  justify-content: space-between;
+}
+.conf-list{
+  display: flex;
+  flex-direction: column;
+  row-gap: 2em;
 }

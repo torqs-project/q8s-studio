@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
-import ConsoleView from './ConsoleView';
 import ConfigurationView from './ConfigurationView';
+import ConfigurationTile from './ConfigurationTile';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -11,7 +11,7 @@ function BasicLayout() {
   const [showModal, setShowModal] = useState('');
   let navState = useLocation().state?.navState;
   if (!navState) {
-    navState = 'home';
+    navState = 'config';
   }
   return (
     <>
@@ -19,28 +19,41 @@ function BasicLayout() {
         <h1>Qubernetes Studio</h1>
         <div className="navigatorButtons">
           <button
-            className={navState === 'home' ? 'selected' : ''}
+            className={navState === 'config' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              setShowModal('');
-              // navigate('/', { state: { navState: 'home' } });
+              // setShowModal('');
+              navigate('/', { state: { navState: 'config' } });
             }}
           >
-            Home
+            Configurations
           </button>
           <button
-            className={navState === 'console' ? 'selected' : ''}
+            className={navState === 'environmnent' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              setShowModal('config');
-              // navigate('/clg', { state: { navState: 'console' } });
+              // setShowModal('config');
+              navigate('/clg', { state: { navState: 'environmnent' } });
             }}
           >
-            Console output
+            Environmnent output
           </button>
         </div>
       </footer>
       <div>
+        <div className="conf-list">
+          <ConfigurationTile
+            configName="kubernetes"
+            kubePath=""
+            workspacePath=""
+          />
+          <ConfigurationTile
+            configName="kubernetes"
+            kubePath=""
+            workspacePath=""
+          />
+        </div>
+
         <Outlet />
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
