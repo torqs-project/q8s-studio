@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import ModalWindow from './ModalView';
+import ConsoleView from './ConsoleView';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
 function BasicLayout() {
   const navigate = useNavigate();
-  // const { navState, setNavState } = useNavigationState();
+  const [showModal, setShowModal] = useState('');
   let navState = useLocation().state?.navState;
   if (!navState) {
     navState = 'home';
@@ -18,7 +21,8 @@ function BasicLayout() {
             className={navState === 'home' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/', { state: { navState: 'home' } });
+              setShowModal('');
+              // navigate('/', { state: { navState: 'home' } });
             }}
           >
             Home
@@ -27,7 +31,8 @@ function BasicLayout() {
             className={navState === 'console' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/clg', { state: { navState: 'console' } });
+              setShowModal('config');
+              // navigate('/clg', { state: { navState: 'console' } });
             }}
           >
             Console output
@@ -36,6 +41,13 @@ function BasicLayout() {
       </footer>
       <div>
         <Outlet />
+        {showModal ? (
+          <ModalWindow onClose={() => setShowModal('')}>
+            <h1>Test Modal</h1>
+          </ModalWindow>
+        ) : (
+          ''
+        )}
       </div>
       <footer id="bottom">
         <a
