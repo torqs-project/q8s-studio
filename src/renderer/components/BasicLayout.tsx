@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConfigurationView from './ConfigurationView';
 import ConfigurationTile from './ConfigurationTile';
+import ConfigurationsList from './ConfigurationsList';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -41,20 +42,8 @@ function BasicLayout() {
         </div>
       </footer>
       <div>
-        <div className="conf-list">
-          <ConfigurationTile
-            configName="kubernetes"
-            kubePath=""
-            workspacePath=""
-          />
-          <ConfigurationTile
-            configName="kubernetes"
-            kubePath=""
-            workspacePath=""
-          />
-        </div>
-
         <Outlet />
+        <ConfigurationsList />
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
             <h1>Test Modal</h1>

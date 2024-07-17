@@ -9,6 +9,11 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
  * @see https://www.electronjs.org/docs/latest/api/ipc-main
  */
 const electronAPI = {
+  writeFile: (fileName: string, content: object) =>
+    ipcRenderer.invoke('writeFile', fileName, content),
+  loadFiles: (): Promise<object[]> => {
+    return ipcRenderer.invoke('loadFiles');
+  },
   /**
    * Open a file or directory
    * @param isDirectory if the file is a directory
