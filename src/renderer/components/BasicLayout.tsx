@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConsoleView from './ConsoleView';
+import ConfigurationView from './ConfigurationView';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -44,6 +45,7 @@ function BasicLayout() {
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
             <h1>Test Modal</h1>
+            <ConfigurationView />
           </ModalWindow>
         ) : (
           ''
