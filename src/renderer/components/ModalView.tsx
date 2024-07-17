@@ -7,10 +7,10 @@ function ModalWindow({ children, onClose }) {
   return (
     <div className="modal">
       <div className="modal-window-content">
+        {children}
         <button type="button" className="close-button" onClick={onClose}>
           X
         </button>
-        {children}
       </div>
     </div>
   );

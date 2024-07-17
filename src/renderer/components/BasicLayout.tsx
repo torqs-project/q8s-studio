@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConfigurationView from './ConfigurationView';
-import ConfigurationTile from './ConfigurationTile';
 import ConfigurationsList from './ConfigurationsList';
 /**
  * A layout component that contains the top and bottom footers for the app.
@@ -17,7 +16,6 @@ function BasicLayout() {
   return (
     <>
       <footer id="top">
-        <h1>Qubernetes Studio</h1>
         <div className="navigatorButtons">
           <button
             className={navState === 'config' ? 'selected' : ''}
@@ -40,13 +38,36 @@ function BasicLayout() {
             Environmnent output
           </button>
         </div>
+        <div id="footerRight">
+          <button
+            type="button"
+            onClick={() => {
+              setShowModal('config');
+            }}
+          >
+            Create new configuration <span>+</span>
+          </button>
+        </div>
       </footer>
       <div>
         <Outlet />
-        <ConfigurationsList />
+        {navState === 'config' ? (
+          <ConfigurationsList>
+            <button
+              type="button"
+              className="create-plus"
+              onClick={() => {
+                setShowModal('config');
+              }}
+            >
+              +
+            </button>
+          </ConfigurationsList>
+        ) : (
+          ''
+        )}
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
-            <h1>Test Modal</h1>
             <ConfigurationView />
           </ModalWindow>
         ) : (
