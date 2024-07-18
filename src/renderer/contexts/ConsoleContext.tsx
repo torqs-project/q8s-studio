@@ -54,7 +54,9 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Navigation context
+/* --------------------------------------------------------
+  Navigation context
+-----------------------------------------------------------*/
 // Define the NavigationContextProps
 interface NavigationContextProps {
   navState: string;
@@ -74,7 +76,13 @@ export const useAppNavigation = () => {
   return context;
 };
 
-// NavigationProvider component
+/**
+ * Navigation provider component
+ *
+ * @export
+ * @param {{ children: ReactNode }} param0
+ * @param {ReactNode} param0.children
+ */
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [navState, setNavState] = useState('config');
   // Memoize the value to avoid unnecessary re-renders

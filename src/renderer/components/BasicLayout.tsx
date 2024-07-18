@@ -1,5 +1,5 @@
-import { useContext, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConfigurationView from './ConfigurationView';
 import ConfigurationsList from './ConfigurationsList';

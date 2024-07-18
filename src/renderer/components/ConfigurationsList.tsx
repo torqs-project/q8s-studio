@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, PropsWithChildren } from 'react';
 import ConfigurationTile from './ConfigurationTile';
 import { SaveFormat } from './ConfigurationView';
 
-function ConfigurationsList({ children }) {
+function ConfigurationsList({ children }: PropsWithChildren) {
   const [configurations, setConfigurations] = useState<SaveFormat[]>([]);
 
   useEffect(() => {
     const loadFiles = async () => {
       try {
         const result = await window.electronAPI.loadFiles();
-        console.log(result);
         setConfigurations(result);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.log(err);
       }
     };

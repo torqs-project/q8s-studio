@@ -1,10 +1,12 @@
+import { ReactNode } from 'react';
 import xIcon from '../../../assets/icons/closeX.svg';
-import React from 'react';
 // import './ModalWindow.css';
 
-function ModalWindow({ children, onClose }) {
-  // const [modalIsOpen, setModalIsOpen] = useState(isOpen);
-
+interface ModalWindowProps {
+  children: ReactNode;
+  onClose: () => void;
+}
+function ModalWindow({ children, onClose }: ModalWindowProps) {
   return (
     <div className="modal">
       <div className="modal-window-content">
@@ -16,5 +18,4 @@ function ModalWindow({ children, onClose }) {
     </div>
   );
 }
-
 export default ModalWindow;

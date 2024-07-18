@@ -14,7 +14,6 @@ export default function ConfigurationTile({
   config,
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
-  console.log(configurationName);
   const { setNavState } = useAppNavigation();
   const navigate = useNavigate();
   return (
