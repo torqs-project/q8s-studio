@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConfigurationView from './ConfigurationView';
 import ConfigurationsList from './ConfigurationsList';
+import { useAppNavigation } from '../contexts/ConsoleContext';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
 function BasicLayout() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState('');
-  let navState = useLocation().state?.navState;
-  if (!navState) {
-    navState = 'config';
-  }
+  const { navState, setNavState } = useAppNavigation();
+  // let navState = useLocation().state?.navState;
+  // if (!navState) {
+  //   navState = 'config';
+  // }
   return (
     <>
       <footer id="top">
@@ -21,18 +23,21 @@ function BasicLayout() {
             className={navState === 'config' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              // setShowModal('');
-              navigate('/', { state: { navState: 'config' } });
+              setShowModal('');
+              navigate('/');
+              setNavState('config');
             }}
           >
-            Configurations
+            My Configurations
           </button>
           <button
+            id="env"
             className={navState === 'environmnent' ? 'selected' : ''}
             type="button"
             onClick={() => {
               // setShowModal('config');
-              navigate('/clg', { state: { navState: 'environmnent' } });
+              navigate('/clg');
+              setNavState('environmnent');
             }}
           >
             Environmnent output

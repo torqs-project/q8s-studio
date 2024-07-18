@@ -87,14 +87,6 @@ export default function ConfigurationView() {
                   directoryPath,
                 };
                 window.electronAPI.writeFile(configurationName, objectToSave);
-                // window.electronAPI
-                //   .runCommand(commandRef.current)
-                //   .then((result: any) => {
-                //     navigate('clg', { state: { navState: 'console' } });
-                //     // setNavState('console');
-                //     return result;
-                //   })
-                //   .catch(() => {});
               }}
             >
               <svg

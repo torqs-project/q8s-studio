@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import runIcon from '../../../assets/icons/run.svg';
 import { SaveFormat } from './ConfigurationView';
+import { useAppNavigation } from '../contexts/ConsoleContext';
 
 interface ConfigurationTileProps {
   config: SaveFormat;
@@ -14,6 +15,7 @@ export default function ConfigurationTile({
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
   console.log(configurationName);
+  const { setNavState } = useAppNavigation();
   const navigate = useNavigate();
   return (
     <button
@@ -24,8 +26,8 @@ export default function ConfigurationTile({
         window.electronAPI
           .runCommand(commandToRun)
           .then((result: any) => {
-            navigate('clg', { state: { navState: 'console' } });
-            // setNavState('console');
+            navigate('/clg');
+            setNavState('environmnent');
             return result;
           })
           .catch(() => {});
