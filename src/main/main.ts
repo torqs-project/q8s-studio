@@ -40,6 +40,7 @@ async function writeFile(fileName: string, content: object) {
   const filePath = path.join(app.getPath('home'), 'config-files/', fileName);
   const contentJSON = JSON.stringify(content);
   fs.writeFileSync(filePath, contentJSON);
+  dialog.showMessageBox(mainWindow!, { message: 'File saved successfully' });
 }
 
 async function loadFiles(): Promise<object[]> {

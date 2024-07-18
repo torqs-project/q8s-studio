@@ -98,7 +98,7 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   }
 }
 
-button, .tile{
+button, .tile, .input-div{
   background-color: white;
   display: flex;
   justify-content: center;
@@ -112,7 +112,6 @@ button, .tile{
     0px 18px 45px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
-
 }
 
 button:hover, .tile:hover {
@@ -322,9 +321,32 @@ a:hover {
     color: white;
     padding: 0.75em 0.75em;
     /* padding-left: 0.5em; */
+    /* margin-top: 5em; */
     cursor: pointer;
     border-radius: 12px;
     svg {
       margin-right: 0.75em;
     }
+}
+.input-div{
+  width: auto;
+  cursor: auto;
+  box-shadow: none;
+  span{
+    align-self: center;
+    margin-right: 0.5em;
+  }
+}
+.text-input{
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  input{
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 0.5em 1em;
+    border: none;
+    background-color: #f5f5f5;
+    /* margin-right: 0.5em; */
+  }
 }
