@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ConfigurationTile from './ConfigurationTile';
+import { SaveFormat } from './ConfigurationView';
 
-function ConfigurationsList({children}) {
-  const [configurations, setConfigurations] = useState<object[]>([]);
+function ConfigurationsList({ children }) {
+  const [configurations, setConfigurations] = useState<SaveFormat[]>([]);
 
   useEffect(() => {
     const loadFiles = async () => {
@@ -20,12 +21,8 @@ function ConfigurationsList({children}) {
 
   return (
     <div className="conf-list">
-      {configurations.map((config) => (
-        <ConfigurationTile
-          configName={config.name}
-          kubePath={config.description}
-          workspacePath={config.config}
-        />
+      {configurations.map((config: SaveFormat) => (
+        <ConfigurationTile config={config} key={config.configurationName} />
       ))}
       {/* <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" />
       <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" /> */}
