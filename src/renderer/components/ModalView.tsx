@@ -1,3 +1,4 @@
+import xIcon from '../../../assets/icons/closeX.svg';
 import React from 'react';
 // import './ModalWindow.css';
 
@@ -9,7 +10,7 @@ function ModalWindow({ children, onClose }) {
       <div className="modal-window-content">
         {children}
         <button type="button" className="close-button" onClick={onClose}>
-          X
+          <img src={xIcon} alt="" />
         </button>
       </div>
     </div>

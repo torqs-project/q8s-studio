@@ -287,17 +287,25 @@ a:hover {
   }
   .close-button {
     position: relative;
-    bottom: calc(100% + 2em);
+    bottom: calc(100% + 0.75rem);
     /* margin-right: 2em; */
-    left: calc(100% - 0.5em);
-    background-color: rgb(255, 2, 2);
+    left: calc(100% - 2rem);
+    background-color: rgba(255, 2, 2, 0);
     border: none;
-    border-radius: 10px;
+    /* border-radius: 10px; */
     cursor: pointer;
-    padding: 0.5em 1em;
-    box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
-      0px 18px 45px -4px rgba(24, 39, 75, 0.14);
+    padding: 0;
+    box-shadow: none;
+    /* box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
+      0px 18px 45px -4px rgba(24, 39, 75, 0.14); */
     transition: all ease-in 0.1s;
+    img{
+      width: 2em;
+      height: 2em;
+    }
+  }
+  .close-button:hover{
+    transform: scale(1.25);
   }
   >div>div{
     height: 100%;
@@ -308,4 +316,15 @@ a:hover {
     height: 100%;
   }
 
+}
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.75em 0.75em;
+    /* padding-left: 0.5em; */
+    cursor: pointer;
+    border-radius: 12px;
+    svg {
+      margin-right: 0.75em;
+    }
 }
