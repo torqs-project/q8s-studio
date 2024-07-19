@@ -20,13 +20,20 @@ function ConfigurationsList({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <div className="conf-list">
-      {configurations.map((config: SaveFormat) => (
-        <ConfigurationTile config={config} key={config.configurationName} />
-      ))}
-      {/* <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" />
+    <div className="conf-list-container">
+      <h2 style={{ textAlign: 'center', marginBottom: '1.5em' }}>
+        {configurations.length > 0
+          ? 'Start an environment:'
+          : 'Create a new environment:'}
+      </h2>
+      <div className="conf-list">
+        {configurations.map((config: SaveFormat) => (
+          <ConfigurationTile config={config} key={config.configurationName} />
+        ))}
+        {/* <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" />
       <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" /> */}
-      {children}
+        {children}
+      </div>
     </div>
   );
 }
