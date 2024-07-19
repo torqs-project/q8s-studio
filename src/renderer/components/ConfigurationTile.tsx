@@ -14,7 +14,7 @@ export default function ConfigurationTile({
   config,
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
-  const { setNavState } = useAppNavigation();
+  const { setNavState, setEnvName } = useAppNavigation();
   const navigate = useNavigate();
   return (
     <button
@@ -27,6 +27,7 @@ export default function ConfigurationTile({
           .then((result: any) => {
             navigate('/clg');
             setNavState('environmnent');
+            setEnvName(configurationName);
             return result;
           })
           .catch(() => {});

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useConsole } from '../contexts/ConsoleContext';
+import { useAppNavigation, useConsole } from '../contexts/ConsoleContext';
 import xmarkSolid from '../../../assets/icons/stop.svg';
 
 /**
@@ -11,6 +11,7 @@ import xmarkSolid from '../../../assets/icons/stop.svg';
  */
 export default function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
+  const { envName } = useAppNavigation();
   const [showPassInput, setShowPassInput] = useState(false);
 
   // Add auto-scroll to the bottom of the console
@@ -81,7 +82,11 @@ export default function ConsoleView(): React.JSX.Element {
       </div>
       <div className="console file">
         <div className="console-header">
-          <p>Command output</p>{' '}
+          {envName ? (
+            <p>Current environment: {envName}</p>
+          ) : (
+            <p>No environment selected</p>
+          )}
           <button
             className="clearBtn"
             type="button"

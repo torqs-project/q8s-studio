@@ -61,6 +61,8 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
 interface NavigationContextProps {
   navState: string;
   setNavState: React.Dispatch<React.SetStateAction<string>>;
+  envName: string;
+  setEnvName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const NavigationContext = createContext<NavigationContextProps | undefined>(
@@ -85,13 +87,16 @@ export const useAppNavigation = () => {
  */
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [navState, setNavState] = useState('config');
+  const [envName, setEnvName] = useState('');
   // Memoize the value to avoid unnecessary re-renders
   const value = useMemo(
     () => ({
       navState,
       setNavState,
+      envName,
+      setEnvName,
     }),
-    [navState, setNavState],
+    [navState, setNavState, envName, setEnvName],
   );
   return (
     <NavigationContext.Provider value={value}>
