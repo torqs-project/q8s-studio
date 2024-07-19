@@ -37,21 +37,51 @@ let mainWindow: BrowserWindow | null = null;
 const allChildProcessess: number[] = [];
 
 async function writeFile(fileName: string, content: object) {
-  const filePath = path.join(app.getPath('home'), 'config-files/', fileName);
-  const contentJSON = JSON.stringify(content);
-  fs.writeFileSync(filePath, contentJSON);
-  dialog.showMessageBox(mainWindow!, { message: 'File saved successfully' });
+  let filePath;
+  try {
+    filePath = path.join(
+      app.getPath('userData'),
+      'user-configurations/',
+      fileName,
+    );
+    const contentJSON = JSON.stringify(content);
+    fs.writeFileSync(filePath, contentJSON); // Throws an error
+    dialog.showMessageBox(mainWindow!, { message: 'File saved successfully' });
+  } catch (error) {
+    dialog.showMessageBox(mainWindow!, {
+      message: `Error saving file. \n Error message:\n${error}`,
+    });
+  }
 }
 
 async function loadFiles(): Promise<object[]> {
-  const folderPath = path.join(app.getPath('home'), 'config-files/');
+  const folderPath = path.join(app.getPath('userData'), 'user-configurations/');
   console.log(folderPath);
   const fileContents: object[] = [];
-  const filesToReturn = fs.readdirSync(folderPath);
-  filesToReturn.forEach((file) => {
-    fileContents.push(JSON.parse(fs.readFileSync(folderPath + file, 'utf8')));
-  });
-  console.log(fileContents);
+  try {
+    const filesToReturn = fs.readdirSync(folderPath);
+    filesToReturn.forEach((file) => {
+      console.log(`file ${file}`);
+      try {
+        fileContents.push(
+          JSON.parse(fs.readFileSync(folderPath + file, 'utf8')),
+        );
+      } catch (error) {
+        dialog.showErrorBox(
+          'Error',
+          `Error loading file ${file}. \n Error message:\n${error}`,
+        );
+        console.log(error);
+      }
+    });
+    console.log(fileContents);
+  } catch (error) {
+    dialog.showErrorBox(
+      'error',
+      `Error loading files. \n Error message:\n${error}`,
+    );
+    console.log(error);
+  }
 
   return fileContents;
 }
@@ -262,6 +292,23 @@ app
   .then(() => {
     createWindow();
     mainWindow?.maximize();
+    // Create an user-configurations folder in the users appData directory if it doesn't exist yet
+    // See https://www.electronjs.org/docs/latest/api/app#appgetpathname
+    const folderPath = path.join(
+      app.getPath('userData'),
+      'user-configurations/',
+    );
+    try {
+      fs.readdirSync(folderPath); // Throws an error if the folder doesn't exist
+    } catch {
+      // Create the folder
+      try {
+        fs.mkdirSync(folderPath);
+      } catch (error) {
+        dialog.showErrorBox('Error', `Failed to create folder: ${error}`);
+        console.log(error);
+      }
+    }
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

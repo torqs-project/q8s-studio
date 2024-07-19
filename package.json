@@ -101,8 +101,7 @@
     "electron-updater": "^6.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.16.0",
-    "sudo-prompt": "^9.2.1"
+    "react-router-dom": "^6.16.0"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",
@@ -173,7 +172,7 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
+    "productName": "Qubernetes Studio",
     "appId": "org.erb.ElectronReact",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
