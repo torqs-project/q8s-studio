@@ -43,11 +43,16 @@ async function writeFile(fileName: string, content: object) {
     filePath = path.join(app.getPath('userData'), configFileDirName, fileName);
     const contentJSON = JSON.stringify(content);
     fs.writeFileSync(filePath, contentJSON); // Throws an error
-    dialog.showMessageBox(mainWindow!, { message: 'File saved successfully' });
+    await dialog.showMessageBox(mainWindow!, {
+      message: 'File saved successfully',
+    });
+
+    return true;
   } catch (error) {
     dialog.showMessageBox(mainWindow!, {
       message: `Error saving file. \n Error message:\n${error}`,
     });
+    return false;
   }
 }
 

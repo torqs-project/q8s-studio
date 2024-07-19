@@ -86,7 +86,21 @@ export default function ConfigurationView() {
                   kubeconfigPath,
                   directoryPath,
                 };
-                window.electronAPI.writeFile(configurationName, objectToSave);
+                window.electronAPI
+                  .writeFile(configurationName, objectToSave)
+                  .then((isSaved) => {
+                    if (isSaved) {
+                      window.location.reload();
+                      // setNavState('');
+                      // setNavState('config');
+                      return isSaved;
+                    }
+                    throw new Error('Error saving file');
+                  })
+                  .catch((err) => {
+                    // eslint-disable-next-line no-console
+                    console.log(err);
+                  });
               }}
             >
               <svg

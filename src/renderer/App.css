@@ -232,7 +232,10 @@ a:hover {
   display: flex;
   flex-direction: column;
   row-gap: 2em;
+  column-gap: 2em;
   align-items: center;
+  flex-wrap: wrap;
+  max-height: 75vh;
 }
 .create-plus{
   border-radius: 100%;
