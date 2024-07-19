@@ -25,6 +25,10 @@ import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+let mainWindow: BrowserWindow | null = null;
+const allChildProcessess: number[] = [];
+const configFileDirName = 'user-configurations/'; // directory name for user configuration files
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -33,17 +37,10 @@ class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
-const allChildProcessess: number[] = [];
-
 async function writeFile(fileName: string, content: object) {
   let filePath;
   try {
-    filePath = path.join(
-      app.getPath('userData'),
-      'user-configurations/',
-      fileName,
-    );
+    filePath = path.join(app.getPath('userData'), configFileDirName, fileName);
     const contentJSON = JSON.stringify(content);
     fs.writeFileSync(filePath, contentJSON); // Throws an error
     dialog.showMessageBox(mainWindow!, { message: 'File saved successfully' });
@@ -55,7 +52,7 @@ async function writeFile(fileName: string, content: object) {
 }
 
 async function loadFiles(): Promise<object[]> {
-  const folderPath = path.join(app.getPath('userData'), 'user-configurations/');
+  const folderPath = path.join(app.getPath('userData'), configFileDirName);
   console.log(folderPath);
   const fileContents: object[] = [];
   try {
@@ -294,10 +291,7 @@ app
     mainWindow?.maximize();
     // Create an user-configurations folder in the users appData directory if it doesn't exist yet
     // See https://www.electronjs.org/docs/latest/api/app#appgetpathname
-    const folderPath = path.join(
-      app.getPath('userData'),
-      'user-configurations/',
-    );
+    const folderPath = path.join(app.getPath('userData'), configFileDirName);
     try {
       fs.readdirSync(folderPath); // Throws an error if the folder doesn't exist
     } catch {
