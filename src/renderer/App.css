@@ -3,12 +3,16 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
  #root {
-  position: relative;
+  /* position: relative; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   color: black;
   overflow: auto;
   overflow-y: auto;
   width: 100vw;
-  /* height: 100vh; */
+  height: 100vh;
   /* background: linear-gradient(
     200.96deg,
     #fedc2a -29.09%,
@@ -31,11 +35,33 @@ footer {
   justify-content: center;
   align-items: center;
   width: 100%;
+  .navigatorButtons{
+    display: flex;
+    flex-direction: row;
+    /* width: 100%; */
+    position: absolute;
+    left: 0;
+    padding-left: 0.2em;
+    padding-right: 2em;
+    /* border-bottom: 2px solid gainsboro; */
+    button {
+      margin:0 0.5em;
+      padding: 0.25em 0;
+      box-shadow: none;
+      border-radius: 0%;
+    }
+  }
+  .selected{
+    border-bottom: 3px solid rgb(0, 0, 0);
+    border-spacing: 1em;
+    padding: 0.5em 0
+   }
 }
 
-/* #top {
-
-} */
+#top {
+  height: 3em;
+  margin-top: 0.5em;
+}
 
 #bottom button{
  margin-bottom: 0.5em;
@@ -46,6 +72,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
 }
 
 .visually-hidden {
@@ -71,7 +98,7 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   }
 }
 
-button{
+button, .tile, .input-div{
   background-color: white;
   display: flex;
   justify-content: center;
@@ -85,10 +112,9 @@ button{
     0px 18px 45px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
-
 }
 
-button:hover {
+button:hover, .tile:hover {
   transform: scale(1.05);
   opacity: 1;
 }
@@ -102,7 +128,7 @@ button:hover {
 }
 .file{
   height: auto;
-  margin: 2em 0 0em;
+  margin: 2em 0em 0em;
   display: flex;
   flex-direction: column;
 }
@@ -122,12 +148,38 @@ a:hover {
   opacity: 1;
   text-decoration: none;
 }
+.processBtns{
+  display: flex;
+  flex-direction: row;
+  column-gap: 1em;
+  button{
+    flex-grow: 10;
+  }
+  .stopBtn{
+    /* background-color: red; */
+    border: 1px solid rgb(255, 0, 0);
+    color: rgb(255, 0, 0);
+    flex-grow: 1;
+    color: red;
+    padding-left: 10px;
+    img {
+      margin-right: 10px;
+    };
+  }
+  .infoP{
+    position: relative;
+    margin: auto;
+  }
+}
 .console{
   background-color: black;
   color: white;
   width: 75vw;
-  height: 30vh;
-  overflow: scroll;
+  min-height: 30vh;
+  max-height: 55vh;
+  border-radius: 10px;
+  overflow: auto;
+  transition: all ease-in 0.1s;
   >p:first-child{
     font-weight: bold;
     font-size: 1.5rem;
@@ -138,12 +190,163 @@ a:hover {
   }
   .output-pass{
     display: flex;
+    margin-top: 1.2em;
     button:hover{
       transform: scale(1.15);
     }
   }
+  .console-header{
+    position: sticky;
+    top: 0;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    /* border-bottom: 2px solid white; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: black;
+    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
+    0px 18px 50px -4px rgba(0, 0, 0, 0.71);
+    /* align-items: center; */
+    /* column-gap: 0.5em */
+  }
+  .clearBtn{
+    /* position: sticky; */
+    font-size:medium;
+    left: 100%;
+    padding-left: none;
+    margin-right: 0.5em;
+  };
 }
 
 .hidden{
   display: none !important;
+}
+
+.tile {
+  width: 30vw;
+  justify-content: space-between;
+}
+.conf-list{
+  display: flex;
+  flex-direction: column;
+  row-gap: 2em;
+  align-items: center;
+}
+.create-plus{
+  border-radius: 100%;
+  padding: 1em;
+  font-size: x-large;
+  color: rgb(0, 166, 0);
+  height: 30px;
+  width: 30px;
+}
+#footerRight{
+  position: absolute;
+  right: 0.5em;
+
+  font-size: 1.3rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 0.5em;
+  /* margin: 0.5em 0 0.5em 0; */
+  span{
+    font-weight: bold;
+    margin-left: 0.5em;
+    margin-right: 0em;
+    border: green 1px solid;
+    padding: 0.25em 0.5em;
+    border-radius: 100%;
+    color: green;
+  }
+}
+/* MODAL WINDOW */
+.modal{
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  >div{
+    background-color: white;
+    padding: 1em;
+    border-radius: 10px;
+    /* display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; */
+    width: 80vw;
+    height: 80vh;
+  }
+  .close-button {
+    position: relative;
+    bottom: calc(100% + 0.75rem);
+    /* margin-right: 2em; */
+    left: calc(100% - 2rem);
+    background-color: rgba(255, 2, 2, 0);
+    border: none;
+    /* border-radius: 10px; */
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+    /* box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
+      0px 18px 45px -4px rgba(24, 39, 75, 0.14); */
+    transition: all ease-in 0.1s;
+    img{
+      width: 2em;
+      height: 2em;
+    }
+  }
+  .close-button:hover{
+    transform: scale(1.25);
+  }
+  >div>div{
+    height: 100%;
+    width: 100%;
+  }
+  .console{
+    width: 100%;
+    height: 100%;
+  }
+
+}
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.75em 0.75em;
+    /* padding-left: 0.5em; */
+    /* margin-top: 5em; */
+    cursor: pointer;
+    border-radius: 12px;
+    svg {
+      margin-right: 0.75em;
+    }
+}
+.input-div{
+  width: auto;
+  cursor: auto;
+  box-shadow: none;
+  span{
+    align-self: center;
+    margin-right: 0.5em;
+  }
+}
+.text-input{
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  input{
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 0.5em 1em;
+    border: none;
+    background-color: #f5f5f5;
+    /* margin-right: 0.5em; */
+  }
 }

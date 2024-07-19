@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useConsole } from '../contexts/ConsoleContext';
+import xmarkSolid from '../../../assets/icons/stop.svg';
 
 /**
  * A component for showing the console output
@@ -7,29 +9,21 @@ import React, { useEffect, useState } from 'react';
  * If password is needed, the prompt is shown for the user and password is forwarded to the main process.
  * @returns {React.JSX.Element}
  */
-function ConsoleView(): React.JSX.Element {
-  const [output, setOutput] = useState<React.JSX.Element[]>([]);
+export default function ConsoleView(): React.JSX.Element {
+  const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
   const [showPassInput, setShowPassInput] = useState(false);
-  const [labUrl, setLabUrl] = useState('');
-  const [pKey, setPKey] = useState(0);
+
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
-    // const consoleDivPass = document.querySelector('.console>.output-pass');
-    // // console.log(consoleDivPass);
-    // consoleDivPass?.scrollIntoView({
-    //   behavior: 'smooth',
-    //   block: 'end',
-    //   inline: 'nearest',
-    // });
     const consoleDiv = document.querySelector('.console>.output');
-    // console.log(consoleDiv);
     consoleDiv?.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
       inline: 'nearest',
     });
   }, [output]);
-  // Add a listener to the channel cli-output
+  // Add a listener to the channel cli-output,
+  // listens to the main process for output
   if (window.electronAPI) {
     window.electronAPI.on('cli-output', (_event, data) => {
       setPKey(pKey + 1);
@@ -37,6 +31,7 @@ function ConsoleView(): React.JSX.Element {
       setOutput([...output, newline]);
     });
     window.electronAPI.askPass((needsPassword: boolean) => {
+      console.log('askpass');
       setShowPassInput(needsPassword);
     });
     window.electronAPI.labUrl((labUrlFromMain: string) => {
@@ -45,25 +40,58 @@ function ConsoleView(): React.JSX.Element {
   }
   return (
     <div>
-      <div className={labUrl ? 'file' : 'file hidden'}>
-        {labUrl ? (
-          <>
-            <button
-              type="button"
-              onClick={() => {
-                window.open(labUrl);
-              }}
-            >
-              Open Jupyter Lab in default browser
-            </button>
-            <p>{labUrl}</p>
-          </>
-        ) : (
-          ''
-        )}
+      {/* Button for opening jupyter lab link */}
+      <div className="file">
+        <div className="processBtns">
+          {/* {console.log(labUrl)} */}
+          {labUrl ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  window.open(labUrl);
+                }}
+              >
+                Open Jupyter Lab in default browser
+              </button>
+              <button
+                className="stopBtn"
+                type="button"
+                onClick={() => {
+                  window.electronAPI
+                    .killProcess()
+                    .then((msg) => {
+                      setLabUrl('');
+                      return msg;
+                    })
+                    .catch((err) => {
+                      return err;
+                    });
+                }}
+              >
+                <img src={xmarkSolid} alt="stop" /> Stop process{' '}
+              </button>
+            </>
+          ) : (
+            // ''
+            <p className="infoP">No ongoing processes</p>
+          )}
+        </div>
+        <p>{labUrl}</p>
       </div>
       <div className="console file">
-        <p>Command output:</p>
+        <div className="console-header">
+          <p>Command output</p>{' '}
+          <button
+            className="clearBtn"
+            type="button"
+            onClick={() => {
+              setOutput([]);
+            }}
+          >
+            Clear output
+          </button>
+        </div>
         <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
           {output}{' '}
           <div>
@@ -71,7 +99,8 @@ function ConsoleView(): React.JSX.Element {
             {showPassInput ? (
               // eslint-disable-next-line jsx-a11y/label-has-associated-control
               <label className="pass">
-                <input type="password" />
+                {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+                <input type="password" autoFocus />
                 <button
                   type="button"
                   onClick={(event) => {
@@ -94,6 +123,7 @@ function ConsoleView(): React.JSX.Element {
             )}
           </div>
         </div>
+        {/* Console without password prompt */}
         <div className={showPassInput ? 'output hidden' : 'output'}>
           {output}{' '}
         </div>
@@ -101,5 +131,3 @@ function ConsoleView(): React.JSX.Element {
     </div>
   );
 }
-
-export default ConsoleView;

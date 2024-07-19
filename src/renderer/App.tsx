@@ -1,102 +1,39 @@
 /* eslint-disable no-console */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import React, { useState, useRef } from 'react';
 import ConsoleView from './components/ConsoleView';
-import FileButton from './components/FileButton';
+import BasicLayout from './components/BasicLayout';
+import { ConsoleProvider, NavigationProvider } from './contexts/ConsoleContext';
 
-function Main() {
-  const [kubeconfigName, setKubeconfigName] = useState('');
-  const [kubeconfigPath, setKubeconfigPath] = useState('');
-  const [directoryName, setDirectoryName] = useState('');
-  const [directoryPath, setDirectoryPath] = useState('');
-  const commandRef = useRef<string>('');
-
-  /**
-   * Fires the event to open a file dialog and sets the selected file path
-   *
-   * @async
-   * @param {boolean} [isDirectory=false] Is the file a directory or not
-   */
-  const openDialog = async (isDirectory: boolean = false) => {
-    const filePath = await window.electronAPI.openFile(isDirectory);
-    if (filePath) {
-      const regex = /\/|\\/;
-      const pathArray = filePath.split(regex);
-      const name = pathArray[pathArray.length - 1];
-      if (isDirectory) {
-        setDirectoryName(name);
-        setDirectoryPath(filePath);
-      } else {
-        setKubeconfigName(name);
-        setKubeconfigPath(filePath);
-      }
-    }
-  };
-  // If both config file and directory are selected, generate the command
-  if (kubeconfigPath && directoryPath) {
-    // Generate command
-    commandRef.current = `docker run --rm --name q8studio -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-  }
-  return (
-    <div>
-      <div className="content">
-        <div>
-          <h2>Please select your local files: </h2>
-        </div>
-        <FileButton
-          name={kubeconfigName}
-          path={kubeconfigPath}
-          openDialog={openDialog}
-        />
-        <FileButton
-          name={directoryName}
-          path={directoryPath}
-          isDirectory
-          openDialog={openDialog}
-        />
-        {commandRef.current ? (
-          <div className="file cmd">
-            <h2>Command to run:</h2>
-            <p>{commandRef.current}</p>
-          </div>
-        ) : (
-          ''
-        )}
-        <div className="file">
-          <button
-            disabled={!(kubeconfigPath && directoryPath)}
-            type="button"
-            onClick={() => {
-              // Generate command
-              // commandRef.current = `docker run --name test -p 8888:8888 -v test:/home/jupyter/.kube/config -v test:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-              // Send command through IPC
-              window.electronAPI
-                .runCommand(commandRef.current)
-                .then((result: any) => {
-                  console.log(result);
-                  return result;
-                })
-                .catch((err: any) => {
-                  console.log(err);
-                });
-            }}
-          >
-            Run command
-          </button>
-        </div>
-        <ConsoleView />
-      </div>
-    </div>
-  );
-}
-
+/**
+ * Qubernetes Studio App.
+ * Handles the routing and provides the ConsoleProvider.
+ */
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Main />} />
-      </Routes>
-    </Router>
+    <NavigationProvider>
+      <ConsoleProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<BasicLayout />}>
+              {/* <Route
+              path="/"
+              element={
+                <ConfigurationView
+                  kubeconfigName={kubeconfigName}
+                  kubeconfigPath={kubeconfigPath}
+                  directoryName={directoryName}
+                  directoryPath={directoryPath}
+                  commandRef={commandRef}
+                  openDialog={openDialog}
+                />
+              }
+            /> */}
+              <Route path="/clg" element={<ConsoleView />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ConsoleProvider>
+    </NavigationProvider>
   );
 }

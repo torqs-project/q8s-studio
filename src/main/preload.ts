@@ -1,6 +1,7 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import { SaveFormat } from '../renderer/components/ConfigurationView';
 
 /**
  * API exposed to the renderer process
@@ -9,6 +10,11 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
  * @see https://www.electronjs.org/docs/latest/api/ipc-main
  */
 const electronAPI = {
+  writeFile: (fileName: string, content: object) =>
+    ipcRenderer.invoke('writeFile', fileName, content),
+  loadFiles: (): Promise<SaveFormat[]> => {
+    return ipcRenderer.invoke('loadFiles');
+  },
   /**
    * Open a file or directory
    * @param isDirectory if the file is a directory
@@ -21,8 +27,15 @@ const electronAPI = {
    * @param command the command to run
    * @returns the output of the command
    */
-  runCommand: (command: string) => {
+  runCommand: (command: string | null) => {
     return ipcRenderer.invoke('runCommand', command);
+  },
+  /**
+   * Kill the child process and return the exit message.
+   * @returns Message for killing the process
+   */
+  killProcess: () => {
+    return ipcRenderer.invoke('killProcess');
   },
   /**
    * Ask the user for a password
