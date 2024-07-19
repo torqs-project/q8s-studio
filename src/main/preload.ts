@@ -1,6 +1,7 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import { SaveFormat } from '../renderer/components/ConfigurationView';
 
 /**
  * API exposed to the renderer process
@@ -9,6 +10,11 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
  * @see https://www.electronjs.org/docs/latest/api/ipc-main
  */
 const electronAPI = {
+  writeFile: (fileName: string, content: object) =>
+    ipcRenderer.invoke('writeFile', fileName, content),
+  loadFiles: (): Promise<SaveFormat[]> => {
+    return ipcRenderer.invoke('loadFiles');
+  },
   /**
    * Open a file or directory
    * @param isDirectory if the file is a directory

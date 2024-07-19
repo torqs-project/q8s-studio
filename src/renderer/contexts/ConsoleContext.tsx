@@ -53,4 +53,50 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
     <ConsoleContext.Provider value={value}>{children}</ConsoleContext.Provider>
   );
 }
-export default { ConsoleProvider };
+
+/* --------------------------------------------------------
+  Navigation context
+-----------------------------------------------------------*/
+// Define the NavigationContextProps
+interface NavigationContextProps {
+  navState: string;
+  setNavState: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const NavigationContext = createContext<NavigationContextProps | undefined>(
+  undefined,
+);
+
+// Custom hook to use the NavigationContext
+export const useAppNavigation = () => {
+  const context = useContext(NavigationContext);
+  if (!context) {
+    throw new Error('useConsole must be used within a NavigationProvider');
+  }
+  return context;
+};
+
+/**
+ * Navigation provider component
+ *
+ * @export
+ * @param {{ children: ReactNode }} param0
+ * @param {ReactNode} param0.children
+ */
+export function NavigationProvider({ children }: { children: ReactNode }) {
+  const [navState, setNavState] = useState('config');
+  // Memoize the value to avoid unnecessary re-renders
+  const value = useMemo(
+    () => ({
+      navState,
+      setNavState,
+    }),
+    [navState, setNavState],
+  );
+  return (
+    <NavigationContext.Provider value={value}>
+      {children}
+    </NavigationContext.Provider>
+  );
+}
+export default { ConsoleProvider, NavigationProvider };

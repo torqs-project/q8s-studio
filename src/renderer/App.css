@@ -58,9 +58,10 @@ footer {
    }
 }
 
-/* #top {
-
-} */
+#top {
+  height: 3em;
+  margin-top: 0.5em;
+}
 
 #bottom button{
  margin-bottom: 0.5em;
@@ -71,6 +72,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
 }
 
 .visually-hidden {
@@ -96,7 +98,7 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   }
 }
 
-button{
+button, .tile, .input-div{
   background-color: white;
   display: flex;
   justify-content: center;
@@ -110,10 +112,9 @@ button{
     0px 18px 45px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
-
 }
 
-button:hover {
+button:hover, .tile:hover {
   transform: scale(1.05);
   opacity: 1;
 }
@@ -127,7 +128,7 @@ button:hover {
 }
 .file{
   height: auto;
-  margin: 2em 0 0em;
+  margin: 2em 0em 0em;
   display: flex;
   flex-direction: column;
 }
@@ -221,4 +222,131 @@ a:hover {
 
 .hidden{
   display: none !important;
+}
+
+.tile {
+  width: 30vw;
+  justify-content: space-between;
+}
+.conf-list{
+  display: flex;
+  flex-direction: column;
+  row-gap: 2em;
+  align-items: center;
+}
+.create-plus{
+  border-radius: 100%;
+  padding: 1em;
+  font-size: x-large;
+  color: rgb(0, 166, 0);
+  height: 30px;
+  width: 30px;
+}
+#footerRight{
+  position: absolute;
+  right: 0.5em;
+
+  font-size: 1.3rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 0.5em;
+  /* margin: 0.5em 0 0.5em 0; */
+  span{
+    font-weight: bold;
+    margin-left: 0.5em;
+    margin-right: 0em;
+    border: green 1px solid;
+    padding: 0.25em 0.5em;
+    border-radius: 100%;
+    color: green;
+  }
+}
+/* MODAL WINDOW */
+.modal{
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  >div{
+    background-color: white;
+    padding: 1em;
+    border-radius: 10px;
+    /* display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; */
+    width: 80vw;
+    height: 80vh;
+  }
+  .close-button {
+    position: relative;
+    bottom: calc(100% + 0.75rem);
+    /* margin-right: 2em; */
+    left: calc(100% - 2rem);
+    background-color: rgba(255, 2, 2, 0);
+    border: none;
+    /* border-radius: 10px; */
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+    /* box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
+      0px 18px 45px -4px rgba(24, 39, 75, 0.14); */
+    transition: all ease-in 0.1s;
+    img{
+      width: 2em;
+      height: 2em;
+    }
+  }
+  .close-button:hover{
+    transform: scale(1.25);
+  }
+  >div>div{
+    height: 100%;
+    width: 100%;
+  }
+  .console{
+    width: 100%;
+    height: 100%;
+  }
+
+}
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.75em 0.75em;
+    /* padding-left: 0.5em; */
+    /* margin-top: 5em; */
+    cursor: pointer;
+    border-radius: 12px;
+    svg {
+      margin-right: 0.75em;
+    }
+}
+.input-div{
+  width: auto;
+  cursor: auto;
+  box-shadow: none;
+  span{
+    align-self: center;
+    margin-right: 0.5em;
+  }
+}
+.text-input{
+  display: flex;
+  flex-direction: row;
+  width: max-content;
+  input{
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 0.5em 1em;
+    border: none;
+    background-color: #f5f5f5;
+    /* margin-right: 0.5em; */
+  }
 }

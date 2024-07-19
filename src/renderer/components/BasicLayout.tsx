@@ -1,41 +1,83 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import ModalWindow from './ModalView';
+import ConfigurationView from './ConfigurationView';
+import ConfigurationsList from './ConfigurationsList';
+import { useAppNavigation } from '../contexts/ConsoleContext';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
 function BasicLayout() {
   const navigate = useNavigate();
-  // const { navState, setNavState } = useNavigationState();
-  let navState = useLocation().state?.navState;
-  if (!navState) {
-    navState = 'home';
-  }
+  const [showModal, setShowModal] = useState('');
+  const { navState, setNavState } = useAppNavigation();
+  // let navState = useLocation().state?.navState;
+  // if (!navState) {
+  //   navState = 'config';
+  // }
   return (
     <>
       <footer id="top">
-        <h1>Qubernetes Studio</h1>
         <div className="navigatorButtons">
           <button
-            className={navState === 'home' ? 'selected' : ''}
+            className={navState === 'config' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/', { state: { navState: 'home' } });
+              setShowModal('');
+              navigate('/');
+              setNavState('config');
             }}
           >
-            Home
+            My Configurations
           </button>
           <button
-            className={navState === 'console' ? 'selected' : ''}
+            id="env"
+            className={navState === 'environmnent' ? 'selected' : ''}
             type="button"
             onClick={() => {
-              navigate('/clg', { state: { navState: 'console' } });
+              // setShowModal('config');
+              navigate('/clg');
+              setNavState('environmnent');
             }}
           >
-            Console output
+            Environmnent output
+          </button>
+        </div>
+        <div id="footerRight">
+          <button
+            type="button"
+            onClick={() => {
+              setShowModal('config');
+            }}
+          >
+            Create new configuration <span>+</span>
           </button>
         </div>
       </footer>
       <div>
         <Outlet />
+        {navState === 'config' ? (
+          <ConfigurationsList>
+            <button
+              type="button"
+              className="create-plus"
+              onClick={() => {
+                setShowModal('config');
+              }}
+            >
+              +
+            </button>
+          </ConfigurationsList>
+        ) : (
+          ''
+        )}
+        {showModal ? (
+          <ModalWindow onClose={() => setShowModal('')}>
+            <ConfigurationView />
+          </ModalWindow>
+        ) : (
+          ''
+        )}
       </div>
       <footer id="bottom">
         <a
