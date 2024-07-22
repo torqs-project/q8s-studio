@@ -7,12 +7,14 @@ import { useAppNavigation } from '../contexts/ConsoleContext';
 
 interface ConfigurationTileProps {
   config: SaveFormat;
+  refreshConfigsList: () => Promise<void>;
 }
 /**
  * A tile that shows the saved environment configuration.
  */
 export default function ConfigurationTile({
   config,
+  refreshConfigsList,
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
   const { setNavState, setEnvName } = useAppNavigation();
@@ -45,10 +47,11 @@ export default function ConfigurationTile({
             .deleteFile(configurationName)
             .then((result) => {
               // TODO: refresh list
+              refreshConfigsList();
               return result;
             })
-            .catch((err) => {
-              console.log(err);
+            .catch(() => {
+              // console.log(err);
             });
         }}
       >

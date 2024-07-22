@@ -5,17 +5,17 @@ import { SaveFormat } from './ConfigurationView';
 function ConfigurationsList({ children }: PropsWithChildren) {
   const [configurations, setConfigurations] = useState<SaveFormat[]>([]);
 
-  useEffect(() => {
-    const loadFiles = async () => {
-      try {
-        const result = await window.electronAPI.loadFiles();
-        setConfigurations(result);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.log(err);
-      }
-    };
+  const loadFiles = async () => {
+    try {
+      const result = await window.electronAPI.loadFiles();
+      setConfigurations(result);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+    }
+  };
 
+  useEffect(() => {
     loadFiles();
   }, []);
 
@@ -28,7 +28,11 @@ function ConfigurationsList({ children }: PropsWithChildren) {
       </h2>
       <div className="conf-list">
         {configurations.map((config: SaveFormat) => (
-          <ConfigurationTile config={config} key={config.configurationName} />
+          <ConfigurationTile
+            config={config}
+            key={config.configurationName}
+            refreshConfigsList={loadFiles}
+          />
         ))}
         {/* <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" />
       <ConfigurationTile configName="kubernetes" kubePath="" workspacePath="" /> */}
