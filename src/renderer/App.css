@@ -224,9 +224,18 @@ a:hover {
   display: none !important;
 }
 
-.tile {
+.tile-div{
+  display: flex;
+  flex-direction: row;
+}
+.tile-btn {
   width: 30vw;
   justify-content: space-between;
+}
+.del-btn {
+  background: rgba(255, 0, 0, 0);
+  box-shadow: none;
+  padding-left: 0.4em;
 }
 .conf-list{
   display: flex;

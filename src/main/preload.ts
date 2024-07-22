@@ -12,6 +12,7 @@ import { SaveFormat } from '../renderer/components/ConfigurationView';
 const electronAPI = {
   writeFile: (fileName: string, content: object) =>
     ipcRenderer.invoke('writeFile', fileName, content),
+  deleteFile: (fileName: string) => ipcRenderer.invoke('deleteFile', fileName),
   loadFiles: (): Promise<SaveFormat[]> => {
     return ipcRenderer.invoke('loadFiles');
   },

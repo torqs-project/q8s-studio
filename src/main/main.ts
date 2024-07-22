@@ -56,6 +56,24 @@ async function writeFile(fileName: string, content: object) {
   }
 }
 
+async function deleteFile(fileName: string) {
+  let filePath;
+  try {
+    filePath = path.join(app.getPath('userData'), configFileDirName, fileName);
+    fs.rmSync(filePath);
+    await dialog.showMessageBox(mainWindow!, {
+      message: 'File deleted successfully',
+    });
+
+    return true;
+  } catch (error) {
+    dialog.showMessageBox(mainWindow!, {
+      message: `Error deleting file. \n Error message:\n${error}`,
+    });
+    return false;
+  }
+}
+
 async function loadFiles(): Promise<object[]> {
   const folderPath = path.join(app.getPath('userData'), configFileDirName);
   console.log(folderPath);
@@ -119,6 +137,7 @@ ipcMain.handle('killProcess', () => {
 ipcMain.handle('writeFile', (_event, fileName, content) =>
   writeFile(fileName, content),
 );
+ipcMain.handle('deleteFile', (_event, fileName) => deleteFile(fileName));
 ipcMain.handle('loadFiles', () => {
   return loadFiles();
 });
