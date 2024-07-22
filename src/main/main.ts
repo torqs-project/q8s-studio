@@ -37,6 +37,16 @@ class AppUpdater {
   }
 }
 
+/* ---------------------------------------
+  Local file handling
+ ----------------------------------------*/
+
+/**
+ * Write a file to the user's appData directory. Converts the JS object to a JSON string.
+ * @param fileName The name of the file to write
+ * @param content The content to write to the file as an JS object
+ * @returns Boolean value to indicate if writing was successful
+ */
 async function writeFile(fileName: string, content: object) {
   let filePath;
   try {
@@ -56,6 +66,12 @@ async function writeFile(fileName: string, content: object) {
   }
 }
 
+/**
+ * Delete a file from the user's appData directory.
+ * @async Waits for the file to be deleted and waits for the dialog to be closed
+ * @param {string} fileName The name of the file to delete
+ * @return A Boolean value which indicates if the file was deleted successfully
+ */
 async function deleteFile(fileName: string) {
   let filePath;
   try {
@@ -74,6 +90,12 @@ async function deleteFile(fileName: string) {
   }
 }
 
+/**
+ * Loads files from the appData directory and returns their contents as an array of objects.
+ *
+ * @async Show error message
+ * @returns {Promise<object[]>}
+ */
 async function loadFiles(): Promise<object[]> {
   const folderPath = path.join(app.getPath('userData'), configFileDirName);
   console.log(folderPath);
@@ -106,12 +128,14 @@ async function loadFiles(): Promise<object[]> {
   return fileContents;
 }
 
-function killAllProcessess(processes: number[]) {
-  processes.forEach((childPID: number) => {
-    process.kill(childPID);
-  });
-}
-
+/**
+ * Opens a system file explorer to open a file or directory and returns the selected file or directory.
+ *
+ * @async
+ * @param {WebContents} sender not used
+ * @param {boolean} isDirectory Specifies if the file explorer should open a directory or a file.
+ * @returns {unknown} Returns the path of the selected file or of the directory
+ */
 async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
   if (isDirectory) {
@@ -126,14 +150,15 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   return '';
 }
 
-ipcMain.handle('openFile', (event, arg) => {
-  return handleFileOpen(event.sender, arg);
-});
+function killAllProcessess(processes: number[]) {
+  processes.forEach((childPID: number) => {
+    process.kill(childPID);
+  });
+}
 
-ipcMain.handle('killProcess', () => {
-  killAllProcessess(allChildProcessess);
-  return 'All child processes killed';
-});
+/* ---------------------------------------
+  IPC handlers
+ ----------------------------------------*/
 ipcMain.handle('writeFile', (_event, fileName, content) =>
   writeFile(fileName, content),
 );
@@ -141,7 +166,13 @@ ipcMain.handle('deleteFile', (_event, fileName) => deleteFile(fileName));
 ipcMain.handle('loadFiles', () => {
   return loadFiles();
 });
-
+ipcMain.handle('openFile', (event, arg) => {
+  return handleFileOpen(event.sender, arg);
+});
+ipcMain.handle('killProcess', () => {
+  killAllProcessess(allChildProcessess);
+  return 'All child processes killed';
+});
 ipcMain.handle('runCommand', (_event, givenCommand) => {
   // Split command to list of arguments
   const splitted = givenCommand.split(' ');
@@ -216,7 +247,9 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
   });
 });
 
-// CODE FROM BOILERPLATE
+/* ---------------------------------------
+  Code from Electron Boilerplate
+ ----------------------------------------*/
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
