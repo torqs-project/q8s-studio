@@ -28,6 +28,7 @@ import { resolveHtmlPath } from './util';
 let mainWindow: BrowserWindow | null = null;
 const allChildProcessess: number[] = [];
 const configFileDirName = 'user-configurations/'; // directory name for user configuration files
+let containerName = '';
 
 class AppUpdater {
   constructor() {
@@ -154,6 +155,9 @@ function killAllProcessess(processes: number[]) {
   processes.forEach((childPID: number) => {
     process.kill(childPID);
   });
+  // For some reason above doesn't stop the docker process on windows, so run docker command to stop the container
+  if (process.platform === 'win32' && containerName)
+    require('child_process').spawn('docker', ['stop', containerName]);
 }
 
 /* ---------------------------------------
@@ -188,6 +192,9 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
     dockerProcess = require('child_process').spawn('sudo', command);
   } else {
     dockerProcess = require('child_process').spawn(cmd, cmdArgs);
+    // eslint-disable-next-line prefer-destructuring
+    containerName = splitted[4];
+    console.log(containerName);
   }
   if (dockerProcess.pid) {
     allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
