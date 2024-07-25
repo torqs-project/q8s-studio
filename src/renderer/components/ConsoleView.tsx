@@ -32,7 +32,6 @@ export default function ConsoleView(): React.JSX.Element {
       setOutput([...output, newline]);
     });
     window.electronAPI.askPass((needsPassword: boolean) => {
-      console.log('askpass');
       setShowPassInput(needsPassword);
     });
     window.electronAPI.labUrl((labUrlFromMain: string) => {

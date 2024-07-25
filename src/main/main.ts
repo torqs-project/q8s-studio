@@ -30,6 +30,7 @@ let mainWindow: BrowserWindow | null = null;
 const allChildProcessess: number[] = [];
 const configFileDirName = 'user-configurations/'; // directory name for user configuration files
 let containerName = '';
+let containerPort = '8888';
 
 class AppUpdater {
   constructor() {
@@ -181,7 +182,10 @@ ipcMain.handle('killProcess', () => {
 ipcMain.handle('getPort', () =>
   portscanner
     .findAPortNotInUse(8888, 9999, '127.0.0.1')
-    .then((port) => port)
+    .then((port) => {
+      containerPort = port.toString();
+      return port;
+    })
     .catch((err) => console.log(err)),
 );
 ipcMain.handle('runCommand', (_event, givenCommand) => {
@@ -233,6 +237,7 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
         try {
           checkedURL = new URL(possibleURL);
           if (checkedURL.hostname.includes('127.0.0.1')) {
+            checkedURL.port = containerPort;
             mainWindow?.webContents.send('lab-url', checkedURL.toString());
             // Use this code to open in the same window as the application:
             // mainWindow?.webContents.loadURL(checkedURL.toString());
