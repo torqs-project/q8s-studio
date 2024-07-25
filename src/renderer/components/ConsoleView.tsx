@@ -69,12 +69,12 @@ export default function ConsoleView(): React.JSX.Element {
                     });
                 }}
               >
-                <img src={xmarkSolid} alt="stop" /> Stop process{' '}
+                <img src={xmarkSolid} alt="stop" /> Stop environment
               </button>
             </>
           ) : (
             // ''
-            <p className="infoP">No ongoing processes</p>
+            <p className="infoP">No running Jupyter instance</p>
           )}
         </div>
         <p>{labUrl}</p>

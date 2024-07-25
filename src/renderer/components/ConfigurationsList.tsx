@@ -24,7 +24,7 @@ function ConfigurationsList({ children }: PropsWithChildren) {
       <h2 style={{ textAlign: 'center', marginBottom: '1.5em' }}>
         {configurations.length > 0
           ? 'Start an environment:'
-          : 'Create a new environment:'}
+          : 'Create a new configuration:'}
       </h2>
       <div className="conf-list">
         {configurations.map((config: SaveFormat) => (

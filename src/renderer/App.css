@@ -73,6 +73,14 @@ footer {
   justify-content: center;
   align-items: center;
   height: 100%;
+  row-gap: 2em;
+  h2 {
+    margin: 0;
+  }
+  >div {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .visually-hidden {
@@ -128,7 +136,7 @@ button:hover, .tile:hover {
 }
 .file{
   height: auto;
-  margin: 2em 0em 0em;
+  /* margin: 2em 0em 0em; */
   display: flex;
   flex-direction: column;
 }
@@ -294,7 +302,7 @@ a:hover {
     align-items: center;
     justify-content: center; */
     width: 80vw;
-    height: 80vh;
+    height: 50vh;
   }
   .close-button {
     position: relative;

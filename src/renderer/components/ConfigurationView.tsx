@@ -61,9 +61,6 @@ export default function ConfigurationView() {
             />
           </label>
         </div>
-        <div>
-          <h2>Please select your local files: </h2>
-        </div>
         <FileButton
           name={kubeconfigName}
           path={kubeconfigPath}
