@@ -18,24 +18,25 @@ export default function ConfigurationTile({
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
   const { setNavState, setEnvName } = useAppNavigation();
-  const [portToUse, setPortToUse] = useState(8888);
   const navigate = useNavigate();
   return (
     <div className="tile-div">
       <button
         className="tile-btn"
         type="button"
-        onClick={() => {
-          window.electronAPI
+        onClick={async () => {
+          const portToUse = await window.electronAPI
             .getPort()
             .then((newportToUse) => {
-              console.log(newportToUse);
-              setPortToUse(newportToUse);
               return newportToUse;
             })
-            .catch(() => {});
+            .catch((err) => {
+              console.log(err);
+              return 0;
+            });
           console.log(portToUse);
-          const commandToRun = `docker run --rm --name ${configurationName} -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+          const commandToRun = `docker run --rm --name ${configurationName} -p ${portToUse}:${portToUse} -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+          console.log(commandToRun);
           window.electronAPI
             .runCommand(commandToRun)
             .then((result: any) => {
