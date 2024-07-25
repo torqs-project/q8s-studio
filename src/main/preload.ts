@@ -23,6 +23,7 @@ const electronAPI = {
    */
   openFile: (isDirectory: boolean) =>
     ipcRenderer.invoke('openFile', isDirectory),
+  getPort: () => ipcRenderer.invoke('getPort').then((port) => port as number),
   /**
    * Runs the given command in main process as a child process
    * @param command the command to run

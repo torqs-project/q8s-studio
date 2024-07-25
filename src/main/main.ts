@@ -22,6 +22,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { ChildProcess } from 'child_process';
 import fs from 'fs';
+import portscanner from 'portscanner';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -177,6 +178,12 @@ ipcMain.handle('killProcess', () => {
   killAllProcessess(allChildProcessess);
   return 'All child processes killed';
 });
+ipcMain.handle('getPort', () =>
+  portscanner
+    .findAPortNotInUse(8888, 9999, '127.0.0.1')
+    .then((port) => port)
+    .catch((err) => console.log(err)),
+);
 ipcMain.handle('runCommand', (_event, givenCommand) => {
   // Split command to list of arguments
   const splitted = givenCommand.split(' ');

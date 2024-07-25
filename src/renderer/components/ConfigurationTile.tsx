@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import runIcon from '../../../assets/icons/run.svg';
 import deleteIcon from '../../../assets/icons/delete.svg';
@@ -18,6 +18,7 @@ export default function ConfigurationTile({
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName, kubeconfigPath, directoryPath } = config;
   const { setNavState, setEnvName } = useAppNavigation();
+  const [portToUse, setPortToUse] = useState(8888);
   const navigate = useNavigate();
   return (
     <div className="tile-div">
@@ -25,6 +26,15 @@ export default function ConfigurationTile({
         className="tile-btn"
         type="button"
         onClick={() => {
+          window.electronAPI
+            .getPort()
+            .then((newportToUse) => {
+              console.log(newportToUse);
+              setPortToUse(newportToUse);
+              return newportToUse;
+            })
+            .catch(() => {});
+          console.log(portToUse);
           const commandToRun = `docker run --rm --name ${configurationName} -p 8888:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
           window.electronAPI
             .runCommand(commandToRun)
