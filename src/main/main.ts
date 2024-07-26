@@ -20,9 +20,10 @@ import {
 
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { ChildProcess, exec } from 'child_process';
+import { ChildProcess, exec, execSync, spawn, spawnSync } from 'child_process';
 import fs from 'fs';
 import portscanner from 'portscanner';
+import { electron, stdin } from 'process';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -40,6 +41,27 @@ class AppUpdater {
   }
 }
 
+function formatCommand(
+  commandToformat: string,
+  askPass = false,
+): [string, string[]] {
+  const { platform } = process;
+  // Split command to list of arguments
+  const splitted = commandToformat.split(' ');
+  // Get the command
+  const cmd = splitted[0];
+  // Get the arguments
+  const cmdArgs = splitted.slice(1);
+  // eslint-disable-next-line prefer-destructuring
+  containerName = splitted[4];
+  if (platform === 'linux') {
+    let command: string[] = [];
+    if (askPass) command = ['-S']; // Use -S to ask the sudo password and show it in the output
+    command = command.concat(splitted);
+    return ['sudo', command];
+  }
+  return [cmd, cmdArgs];
+}
 /* ---------------------------------------
   Local file handling
  ----------------------------------------*/
@@ -154,12 +176,13 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
 }
 
 function killAllProcessess(processes: number[]) {
+  exec('sudo docker kill runme');
   processes.forEach((childPID: number) => {
-    process.kill(childPID);
+    process.kill(childPID, 'SIGKILL');
   });
   // For some reason above doesn't stop the docker process on windows, so run docker command to stop the container
   if (process.platform === 'win32' && containerName)
-    require('child_process').spawn('docker', ['stop', containerName]);
+    spawn('docker', ['stop', containerName]);
 }
 
 /* ---------------------------------------
@@ -188,49 +211,89 @@ ipcMain.handle('getPort', () =>
     })
     .catch((err) => console.log(err)),
 );
-ipcMain.handle('runCommand', (_event, givenCommand) => {
-  // Split command to list of arguments
-  const splitted = givenCommand.split(' ');
-  // Get the command
-  const cmd = splitted[0];
-  // Get the arguments
-  const cmdArgs = splitted.slice(1);
-  let dockerProcess: ChildProcess;
-  // Ask for sudo password if on linux
-  if (process.platform === 'linux') {
-    let command = ['-S']; // Use -S to ask the sudo password and show it in the output
-    command = command.concat(splitted);
-    dockerProcess = require('child_process').spawn('sudo', command);
-  } else {
-    dockerProcess = require('child_process').spawn(cmd, cmdArgs);
-    // eslint-disable-next-line prefer-destructuring
-    containerName = splitted[4];
-    console.log(containerName);
-  }
+ipcMain.handle('runCommand', async (_event, givenCommand) => {
+  const command = formatCommand(givenCommand, true);
+  console.log(command);
+  const dockerProcess = spawn(command[0], command[1]);
   if (dockerProcess.pid) {
     allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
   }
-  // Check if image exists and send this information to renderer
-  // The command returns the repository names of images as a string.
-  exec(
-    `sudo docker images --format "{{.Repository}}"`,
-    (err, stdout, stderr) => {
-      if (err) {
-        console.log(err);
-      }
-      if (stderr) {
-        console.log(stderr);
-      }
-      console.log(`stdout for checking image: ${stdout}`);
-      if (stdout.includes('torqs-project/q8s-devenv')) {
+
+  dockerProcess.stdin.on('close', () => {
+    console.log(dockerProcess.stdin.closed);
+    console.log('stdin closed');
+    // Check if image exists and send this information to renderer
+    // The command returns the repository names of images as a string.
+    const checkImageCommand = `docker images --format "{{.Repository}}"`;
+    const formatted = formatCommand(checkImageCommand);
+    console.log(formatted);
+    const toRun = formatted[0].concat(` ${checkImageCommand}`);
+    console.log(toRun);
+    exec(toRun, (err, stdout, stderr) => {
+      console.log(err?.message);
+      console.log(stdout);
+      console.log(stderr);
+      const dataAsString = stdout;
+      if (dataAsString.includes('torqs-project/q8s-devenv')) {
         console.log('ICLUDES THE IMAGE');
         mainWindow?.webContents.send('image-exists', true);
+        console.log(`container name: ${containerName}`);
+        let urlPropsJSON = '';
+        // Execute a command that gets the parameters of the jupyter lab instance
+        exec(
+          `sudo docker exec ${containerName} jupyter lab list --json`,
+          (errT, out, sterr) => {
+            console.log(errT);
+            console.log(sterr);
+            try {
+              console.log(`out: ${out}`);
+              urlPropsJSON = JSON.parse(out.toString());
+              console.log(urlPropsJSON);
+              const url = `localhost:${urlPropsJSON.port}/lab?token=${urlPropsJSON.token}`;
+              console.log(url);
+              mainWindow?.webContents.send('lab-url', url);
+            } catch (error) {
+              console.log(error);
+            }
+          },
+        );
+
       } else {
         console.log('DOES NOT INCLUDE THE IMAGE');
         mainWindow?.webContents.send('image-exists', false);
       }
-    },
-  );
+    });
+    // dockerProcess.stdout.on('data', (data: Buffer) => console.log("hel1"));
+    // dockerProcess.stderr.on('data', (data: Buffer) => console.log("helo2"));
+    // cp.stderr.on('data', (err: Buffer) => console.log(err.toString()));
+    // dockerProcess.stderr.on('data', (data: Buffer) => {
+    //   console.log('data');
+    //   console.log(data.toString());
+    //   const dataAsString = data.toString();
+    //   if (dataAsString.includes('torqs-project/q8s-devenv')) {
+    //     console.log('ICLUDES THE IMAGE');
+    //     // mainWindow?.webContents.send('image-exists', true);
+    //     // Execute a command that gets the parameters of the jupyter lab instance
+    //     // exec(
+    //     //   `sudo docker exec ${containerName} jupyter lab list --json`,
+    //     //   (errT, out, sterr) => {
+    //     //     try {
+    //     //       const urlPropsJSON = JSON.parse(out.toString());
+    //     //       console.log(urlPropsJSON);
+    //     //     } catch (error) {
+    //     //       console.log(error);
+    //     //     }
+    //     //   },
+    //     // );
+
+    //     // const url = `localhost:${portFromJSON}/lab?token=${tokenFromJSON}`;
+    //   } else {
+    //     console.log('DOES NOT INCLUDE THE IMAGE');
+    //     mainWindow?.webContents.send('image-exists', false);
+    //   }
+    // });
+  });
+  // After password has been entered, run another command
   // Handle stdios
   // For some reason output from docker goes to stderr instead of stdout.
   dockerProcess.stdout?.on('data', (data: Buffer) => {
@@ -247,38 +310,43 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
       // Pass the returning password from renderer to the child process
       ipcMain.on('pass', (_event2, pwd = '') => {
         dockerProcess.stdin?.write(`${pwd}\n`);
-        dockerProcess.stdin?.end();
+        // eslint-disable-next-line prefer-destructuring
+        containerName = givenCommand.split(' ')[4];
+        dockerProcess.stdin.end();
       });
+    } else {
+      // eslint-disable-next-line prefer-destructuring
+      containerName = givenCommand.split(' ')[4];
+      dockerProcess.stdin.end();
     }
     // Parse and handle URL
-    if (err.toString().includes('URL')) {
-      const stringAsWords = err.toString().split(' ');
-      stringAsWords.forEach((possibleURL) => {
-        let checkedURL;
-        // If possibleURL is a valid URL, send it to the renderer, otherwise throws an error and does nothing
-        try {
-          checkedURL = new URL(possibleURL);
-          if (checkedURL.hostname.includes('127.0.0.1')) {
-            checkedURL.port = containerPort;
-            mainWindow?.webContents.send('lab-url', checkedURL.toString());
-            // Use this code to open in the same window as the application:
-            // mainWindow?.webContents.loadURL(checkedURL.toString());
-          }
-        } catch (error) {
-          // console.log('No Valid URL found');
-        }
-      });
-      mainWindow?.webContents.send('cli-output', `URL: ${err.toString()}`);
-    } else {
-      mainWindow?.webContents.send('cli-output', `${err.toString()}`);
-    }
+    // if (err.toString().includes('URL')) {
+    //   const stringAsWords = err.toString().split(' ');
+    //   stringAsWords.forEach((possibleURL) => {
+    //     let checkedURL;
+    //     // If possibleURL is a valid URL, send it to the renderer, otherwise throws an error and does nothing
+    //     try {
+    //       checkedURL = new URL(possibleURL);
+    //       if (checkedURL.hostname.includes('127.0.0.1')) {
+    //         checkedURL.port = containerPort;
+    //         mainWindow?.webContents.send('lab-url', checkedURL.toString());
+    //         // Use this code to open in the same window as the application:
+    //         // mainWindow?.webContents.loadURL(checkedURL.toString());
+    //       }
+    //     } catch (error) {
+    //       // console.log('No Valid URL found');
+    //     }
+    //   });
+    //   mainWindow?.webContents.send('cli-output', `URL: ${err.toString()}`);
+    // } else {
+    //   mainWindow?.webContents.send('cli-output', `${err.toString()}`);
+    // }
+    // dockerProcess.stdin?.end();
+    mainWindow?.webContents.send('cli-output', `${err.toString()}`);
     return `${err.toString()}err`;
   });
-  dockerProcess.on('exit', (code: Buffer) => {
-    mainWindow?.webContents.send(
-      'cli-output',
-      `EXIT CODE CP: ${code.toString()}`,
-    );
+  dockerProcess.on('exit', (code) => {
+    mainWindow?.webContents.send('cli-output', `EXIT CODE CP: ${code}`);
     if (dockerProcess.pid) {
       const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
       if (remIndex > -1) {

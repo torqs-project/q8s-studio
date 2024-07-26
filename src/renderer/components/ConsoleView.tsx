@@ -40,6 +40,7 @@ export default function ConsoleView(): React.JSX.Element {
     });
     window.electronAPI.imageExists((imageExists: boolean) => {
       setShowDownload(!imageExists);
+      console.log(showDownload);
     });
   }
   return (
@@ -47,7 +48,6 @@ export default function ConsoleView(): React.JSX.Element {
       {/* Button for opening jupyter lab link */}
       <div className="file">
         <div className="processBtns">
-          {/* {console.log(labUrl)} */}
           {showDownload ? (
             <>
               <button type="button" className="showDownloadBtn">
@@ -83,7 +83,10 @@ export default function ConsoleView(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => {
-                  window.open(labUrl);
+                  console.log("onclick");
+                  console.log(labUrl);
+
+                  window.open(new URL(labUrl));
                 }}
               >
                 Open Jupyter Lab in default browser
