@@ -20,7 +20,7 @@ import {
 
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { ChildProcess } from 'child_process';
+import { ChildProcess, exec } from 'child_process';
 import fs from 'fs';
 import portscanner from 'portscanner';
 import MenuBuilder from './menu';
@@ -210,6 +210,27 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
   if (dockerProcess.pid) {
     allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
   }
+  // Check if image exists and send this information to renderer
+  // The command returns the repository names of images as a string.
+  exec(
+    `sudo docker images --format "{{.Repository}}"`,
+    (err, stdout, stderr) => {
+      if (err) {
+        console.log(err);
+      }
+      if (stderr) {
+        console.log(stderr);
+      }
+      console.log(`stdout for checking image: ${stdout}`);
+      if (stdout.includes('torqs-project/q8s-devenv')) {
+        console.log('ICLUDES THE IMAGE');
+        mainWindow?.webContents.send('image-exists', true);
+      } else {
+        console.log('DOES NOT INCLUDE THE IMAGE');
+        mainWindow?.webContents.send('image-exists', false);
+      }
+    },
+  );
   // Handle stdios
   // For some reason output from docker goes to stderr instead of stdout.
   dockerProcess.stdout?.on('data', (data: Buffer) => {
@@ -234,6 +255,7 @@ ipcMain.handle('runCommand', (_event, givenCommand) => {
       const stringAsWords = err.toString().split(' ');
       stringAsWords.forEach((possibleURL) => {
         let checkedURL;
+        // If possibleURL is a valid URL, send it to the renderer, otherwise throws an error and does nothing
         try {
           checkedURL = new URL(possibleURL);
           if (checkedURL.hostname.includes('127.0.0.1')) {

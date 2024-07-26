@@ -13,6 +13,7 @@ export default function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
   const { envName } = useAppNavigation();
   const [showPassInput, setShowPassInput] = useState(false);
+  const [showDownload, setShowDownload] = useState(false);
 
   // Add auto-scroll to the bottom of the console
   useEffect(() => {
@@ -37,11 +38,44 @@ export default function ConsoleView(): React.JSX.Element {
     window.electronAPI.labUrl((labUrlFromMain: string) => {
       setLabUrl(labUrlFromMain);
     });
+    window.electronAPI.imageExists((imageExists: boolean) => {
+      setShowDownload(!imageExists);
+    });
   }
   return (
     <div>
       {/* Button for opening jupyter lab link */}
       <div className="file">
+        <div className="processBtns">
+          {/* {console.log(labUrl)} */}
+          {showDownload ? (
+            <>
+              <button type="button" className="showDownloadBtn">
+                Downloading environment...
+              </button>
+              <button
+                className="stopBtn"
+                type="button"
+                onClick={() => {
+                  window.electronAPI
+                    .killProcess()
+                    .then((msg) => {
+                      setLabUrl('');
+                      setShowDownload(false);
+                      return msg;
+                    })
+                    .catch((err) => {
+                      return err;
+                    });
+                }}
+              >
+                <img src={xmarkSolid} alt="stop" /> Stop download
+              </button>
+            </>
+          ) : (
+            ''
+          )}
+        </div>
         <div className="processBtns">
           {/* {console.log(labUrl)} */}
           {labUrl ? (

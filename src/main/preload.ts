@@ -54,6 +54,13 @@ const electronAPI = {
    */
   password: (value: string) => ipcRenderer.send('pass', value),
   /**
+   * Sends boolean value to renderer process to check if a docker image exists
+   * @param callback
+   */
+  imageExists: (callback: (value: boolean) => void) => {
+    ipcRenderer.on('image-exists', (event, value) => callback(value));
+  },
+  /**
    * Get the lab url from the main process
    * @param callback the callback to call with the url
    * @returns nothing
