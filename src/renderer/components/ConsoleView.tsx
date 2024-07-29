@@ -58,7 +58,7 @@ export default function ConsoleView(): React.JSX.Element {
                 type="button"
                 onClick={() => {
                   window.electronAPI
-                    .killProcess()
+                    .killProcess(envName)
                     .then((msg) => {
                       setLabUrl('');
                       setShowDownload(false);
@@ -96,7 +96,7 @@ export default function ConsoleView(): React.JSX.Element {
                 type="button"
                 onClick={() => {
                   window.electronAPI
-                    .killProcess()
+                    .killProcess(envName)
                     .then((msg) => {
                       setLabUrl('');
                       return msg;

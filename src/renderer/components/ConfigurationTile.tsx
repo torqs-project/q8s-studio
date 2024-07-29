@@ -36,10 +36,10 @@ export default function ConfigurationTile({
               return 0;
             });
           console.log(portToUse);
-          const commandToRun = `docker run --rm --name ${configurationName} -p ${portToUse}:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
+          const commandToRun = `docker run --name ${configurationName} -p ${portToUse}:${portToUse} -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
           console.log(commandToRun);
           window.electronAPI
-            .runCommand(commandToRun)
+            .runCommand(commandToRun, portToUse.toString())
             .then((result: any) => {
               navigate('/clg');
               setNavState('environmnent');

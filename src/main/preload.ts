@@ -29,15 +29,16 @@ const electronAPI = {
    * @param command the command to run
    * @returns the output of the command
    */
-  runCommand: (command: string | null) => {
-    return ipcRenderer.invoke('runCommand', command);
+  runCommand: (command: string | null, port: string) => {
+    return ipcRenderer.invoke('runCommand', command, port);
   },
   /**
-   * Kill the child process and return the exit message.
+   * Kill the child process of the environment (docker container) and return the exit message.
+   * @param containerName string
    * @returns Message for killing the process
    */
-  killProcess: () => {
-    return ipcRenderer.invoke('killProcess');
+  killProcess: (containerName: string) => {
+    return ipcRenderer.invoke('killProcess', containerName);
   },
   /**
    * Ask the user for a password
