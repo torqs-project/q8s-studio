@@ -39,11 +39,11 @@ class AppUpdater {
 }
 
 /**
- * Description placeholder
+ * Formats a command to be used in spawn function. If linux is used, adds sudo to the command.
  *
- * @param {string} commandToformat
- * @param {boolean} [askPass=false]
- * @returns A object with the command, arguments, the whole command as a string the container name
+ * @param {string} commandToformat The command to format
+ * @param {boolean} [askPass=false] If sudo password is needed, askPass should be true
+ * @returns An object with the command, arguments, the whole command as a string the container name
  */
 function formatCommand(
   commandToformat: string,
@@ -77,7 +77,7 @@ function formatCommand(
     const commandAsString = result[0]
       .concat(` ${result[1]}`)
       .replaceAll(',', ' ');
-    console.log('CMDASSTRING');
+    console.log('Command as string:');
     console.log(commandAsString);
     resultObject = {
       command: result[0],
@@ -92,7 +92,6 @@ function formatCommand(
 /* ---------------------------------------
   Local file handling
  ----------------------------------------*/
-
 /**
  * Write a file to the user's appData directory. Converts the JS object to a JSON string.
  * @param fileName The name of the file to write
@@ -108,7 +107,6 @@ async function writeFile(fileName: string, content: object) {
     await dialog.showMessageBox(mainWindow!, {
       message: 'File saved successfully',
     });
-
     return true;
   } catch (error) {
     dialog.showMessageBox(mainWindow!, {
@@ -146,16 +144,14 @@ async function deleteFile(fileName: string) {
  * Loads files from the appData directory and returns their contents as an array of objects.
  *
  * @async Show error message
- * @returns {Promise<object[]>}
+ * @returns {Promise<object[]>} The contents of of the files
  */
 async function loadFiles(): Promise<object[]> {
   const folderPath = path.join(app.getPath('userData'), configFileDirName);
-  // console.log(folderPath);
   const fileContents: object[] = [];
   try {
     const filesToReturn = fs.readdirSync(folderPath);
     filesToReturn.forEach((file) => {
-      // console.log(`file ${file}`);
       try {
         fileContents.push(
           JSON.parse(fs.readFileSync(folderPath + file, 'utf8')),
@@ -168,7 +164,6 @@ async function loadFiles(): Promise<object[]> {
         console.log(error);
       }
     });
-    // console.log(fileContents);
   } catch (error) {
     dialog.showErrorBox(
       'error',
@@ -176,7 +171,6 @@ async function loadFiles(): Promise<object[]> {
     );
     console.log(error);
   }
-
   return fileContents;
 }
 
@@ -186,7 +180,7 @@ async function loadFiles(): Promise<object[]> {
  * @async
  * @param {WebContents} sender not used
  * @param {boolean} isDirectory Specifies if the file explorer should open a directory or a file.
- * @returns {unknown} Returns the path of the selected file or of the directory
+ * @returns {[]} Returns the path of the selected file or of the directory
  */
 async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   let fileOrDir: 'openFile' | 'openDirectory' = 'openFile';
@@ -202,6 +196,12 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
   return '';
 }
 
+/**
+ * Kills all docker processes
+ *
+ * @param {number[]} processes A list of the process numbers that are running
+ * @param {?string} [containerName] The name of the container to be stopped, if it is known
+ */
 function killAllProcessess(processes: number[], containerName?: string) {
   const killCommand = formatCommand(`docker kill ${containerName}`);
   if (containerName) exec(killCommand.commandAsString);
@@ -243,25 +243,38 @@ ipcMain.handle('getPort', () =>
     })
     .catch((err) => console.log(err)),
 );
+
+/** Function to validate a sudo user. */
 function validateSudoUser() {
+  // Spawn a new process for sudo
   const sudoUser = spawn('sudo', ['-v', '-S']);
-  sudoUser.stdout?.on('data', (out) => {
+  // Listen for data from stdout of the sudo process
+  sudoUser.stdout?.on('data', (out: Buffer) => {
+    // Send output to renderer
     mainWindow?.webContents.send('cli-output', `${out.toString()}`);
   });
+  // Listen for data from stderr of the sudo process
   sudoUser.stderr?.on('data', (msg: Buffer) => {
     // Send message to renderer to include a password input
     mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
     mainWindow?.webContents.send('ask-pass', true);
     // Pass the returning password from renderer to the child process
     ipcMain.on('pass', (_event2, pwd = '') => {
-      console.log('pass');
+      // Write the password to stdin of the sudo process
       sudoUser.stdin?.write(`${pwd}\n`);
+      // End the stdin stream
       sudoUser.stdin.end();
-      console.log('ended on if');
     });
   });
 }
 
+/**
+ * Gets the URL of the container.
+ *
+ * @async
+ * @param {string} containerName The name of the container.
+ * @param {string} port The port of the container.
+ */
 async function getURL(containerName: string, port: string) {
   // Has more props, but these are used here
   let urlPropsJSON: { token: string } = {
@@ -272,13 +285,8 @@ async function getURL(containerName: string, port: string) {
     `docker exec ${containerName} jupyter lab list --json`,
   );
   const out = execSync(dockerExecCmd.commandAsString);
-
-  console.log(`out: ${out}`);
   try {
     urlPropsJSON = JSON.parse(out.toString());
-    console.log(urlPropsJSON);
-    console.log('port');
-    console.log(port);
     const url = `http://localhost:${port}/lab?token=${urlPropsJSON.token}`;
     console.log(url);
     return url;
@@ -307,6 +315,13 @@ async function getURL(containerName: string, port: string) {
 //   });
 // }
 
+/**
+ * Spawns a child process for the docker container and sends the output to the renderer
+ * @param mainCommand Command to run
+ * @param args Arguments for the command
+ * @param containerName Name of the docker container
+ * @param port The port where to run the container
+ */
 async function dockerRun(
   mainCommand: string,
   args: string[],
@@ -332,7 +347,7 @@ async function dockerRun(
     return `${msg.toString()}err`;
   });
   dockerProcess.on('exit', (code) => {
-    mainWindow?.webContents.send('cli-output', `EXIT CODE CP: ${code}`);
+    mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
     if (dockerProcess.pid) {
       const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
       if (remIndex > -1) {
@@ -345,40 +360,25 @@ async function dockerRun(
 ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
   // Validate sudo user's credentials if on linux
   if (process.platform === 'linux') validateSudoUser();
-  // Check if image of the container exists
-
   const givenCmdFormatted = formatCommand(givenCommand, true);
   const { command, commandArgs, containerName } = givenCmdFormatted;
-  console.log(
-    givenCmdFormatted.command,
-    givenCmdFormatted.commandArgs,
-    givenCmdFormatted.containerName,
-  );
+  // Check if image of the container exists
   const checkImageCommand = `docker images --format "{{.Repository}}"`;
   const formatted = formatCommand(checkImageCommand);
-  // console.log(formatted);
   const checkImageToRun = formatted.commandAsString;
-  console.log('FORMATTED IMAGE CHECK');
-  console.log(checkImageToRun);
-  exec(checkImageToRun, async (err, stdout, stderr) => {
-    console.log(err?.message);
-    console.log(stdout);
-    console.log(stderr);
+  exec(checkImageToRun, async (_err, stdout) => {
     const dataAsString = stdout;
     if (dataAsString.includes('torqs-project/q8s-devenv')) {
       console.log('ICLUDES THE IMAGE');
       mainWindow?.webContents.send('image-exists', true);
-      // console.log(`container name: ${containerName}`);
+      // Check if container exists
       const checkFormatted = formatCommand(
         `docker container ls -a --format "{{.Names}}"`,
       );
-      console.log(checkFormatted.commandAsString);
-      // Check if container exists
-      exec(checkFormatted.commandAsString, (_err, containers) => {
-        console.log(containers);
+      exec(checkFormatted.commandAsString, (_errContainer, containers) => {
         if (containers.includes(containerName)) {
           console.log('ICLUDES THE CONTAINER');
-          // Is the container running?
+          // Check if the container is running
           const containersExec = formatCommand(
             `docker container ls --format "{{.Names}}"`,
           );
@@ -401,10 +401,11 @@ ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
                 );
               } else {
                 console.log('IS NOT RUNNING');
-                const removeCmd = formatCommand(
-                  `docker container rm ${containerName}`,
+                // Remove the container before starting a new one, because the port might differ from the existing container's port
+                exec(
+                  formatCommand(`docker container rm ${containerName}`)
+                    .commandAsString,
                 );
-                exec(removeCmd.commandAsString);
                 dockerRun(command, commandArgs, containerName, port);
               }
             },
@@ -416,7 +417,7 @@ ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
       });
     } else {
       console.log('DOES NOT INCLUDE THE IMAGE');
-      mainWindow?.webContents.send('image-exists', false);
+      mainWindow?.webContents.send('image-exists', false); // Show 'stop download' button on the renderer
       dockerRun(command, commandArgs, containerName, port);
     }
   });
