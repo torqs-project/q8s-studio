@@ -343,9 +343,8 @@ async function dockerRun(
 }
 
 ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
-  // Validate sudo user's credentials
-  validateSudoUser();
-  // console.log(sudoUser);
+  // Validate sudo user's credentials if on linux
+  if (process.platform === 'linux') validateSudoUser();
   // Check if image of the container exists
 
   const givenCmdFormatted = formatCommand(givenCommand, true);
