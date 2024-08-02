@@ -43,12 +43,17 @@ class AppUpdater {
  *
  * @param {string} commandToformat
  * @param {boolean} [askPass=false]
- * @returns A list with the command, arguments and the container name
+ * @returns A object with the command, arguments, the whole command as a string the container name
  */
 function formatCommand(
   commandToformat: string,
   askPass: boolean = false,
-): [string, string[], string] {
+): {
+  command: string;
+  commandArgs: string[];
+  commandAsString: string;
+  containerName: string;
+} {
   const { platform } = process;
   // Split command to list of arguments
   const splitted = commandToformat.split(' ');
@@ -58,13 +63,31 @@ function formatCommand(
   const cmdArgs = splitted.slice(1);
   // eslint-disable-next-line prefer-destructuring
   const containerName = splitted[3];
+  let resultObject = {
+    command: cmd,
+    commandArgs: cmdArgs,
+    commandAsString: commandToformat,
+    containerName,
+  };
   if (platform === 'linux') {
     let command: string[] = [];
     if (askPass) command = ['-S']; // Use -S to ask the sudo password and show it in the output
     command = command.concat(splitted);
-    return ['sudo', command, containerName];
+    const result: [string, string[], string] = ['sudo', command, containerName];
+    const commandAsString = result[0]
+      .concat(` ${result[1]}`)
+      .replaceAll(',', ' ');
+    console.log('CMDASSTRING');
+    console.log(commandAsString);
+    resultObject = {
+      command: result[0],
+      commandArgs: result[1],
+      commandAsString,
+      containerName: result[2],
+    };
+    return resultObject;
   }
-  return [cmd, cmdArgs, containerName];
+  return resultObject;
 }
 /* ---------------------------------------
   Local file handling
@@ -180,7 +203,8 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
 }
 
 function killAllProcessess(processes: number[], containerName?: string) {
-  if (containerName) exec(`sudo docker kill ${containerName}`);
+  const killCommand = formatCommand(`docker kill ${containerName}`);
+  if (containerName) exec(killCommand.commandAsString);
   processes.forEach((childPID: number) => {
     console.log(processes);
     try {
@@ -244,10 +268,11 @@ async function getURL(containerName: string, port: string) {
     token: '',
   };
   // Execute a command that gets the parameters of the jupyter lab instance
-  const out = execSync(
-    `sudo docker exec ${containerName} jupyter lab list --json`,
+  const dockerExecCmd = formatCommand(
+    `docker exec ${containerName} jupyter lab list --json`,
   );
-  console.log(`out: sudo docker exec ${containerName} jupyter lab list --json`);
+  const out = execSync(dockerExecCmd.commandAsString);
+
   console.log(`out: ${out}`);
   try {
     urlPropsJSON = JSON.parse(out.toString());
@@ -263,24 +288,24 @@ async function getURL(containerName: string, port: string) {
   }
 }
 
-async function dockerStart(containerName: string, port: string) {
-  const cmdStartContainer = `docker start ${containerName} -a`;
-  const containerCommand = formatCommand(cmdStartContainer);
-  console.log(containerCommand);
-  const containerProcess = spawn(containerCommand[0], containerCommand[1]);
-  if (containerProcess.pid) {
-    allChildProcessess.push(containerProcess.pid); // Add child process to list of all child processes for killing when exiting app
-  }
-  containerProcess.stderr.on('data', async (data) => {
-    mainWindow?.webContents.send(
-      'cli-output',
-      `DOCKER START: ${data.toString()}`,
-    );
-  });
-  containerProcess.on('exit', (code) => {
-    mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
-  });
-}
+// async function dockerStart(containerName: string, port: string) {
+//   const cmdStartContainer = `docker start ${containerName} -a`;
+//   const containerCommand = formatCommand(cmdStartContainer);
+//   console.log(containerCommand);
+//   const containerProcess = spawn(containerCommand[0], containerCommand[1]);
+//   if (containerProcess.pid) {
+//     allChildProcessess.push(containerProcess.pid); // Add child process to list of all child processes for killing when exiting app
+//   }
+//   containerProcess.stderr.on('data', async (data) => {
+//     mainWindow?.webContents.send(
+//       'cli-output',
+//       `DOCKER START: ${data.toString()}`,
+//     );
+//   });
+//   containerProcess.on('exit', (code) => {
+//     mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
+//   });
+// }
 
 async function dockerRun(
   mainCommand: string,
@@ -295,10 +320,7 @@ async function dockerRun(
   // Handle stdio
   // For some reason output from docker goes to stderr instead of stdout.
   dockerProcess.stderr?.on('data', async (msg: Buffer) => {
-    mainWindow?.webContents.send(
-      'cli-output',
-      `OUTPUT FROM DOCKERpROCESS: ${msg.toString()}`,
-    );
+    mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
     if (msg.toString().includes('To access the server')) {
       const url = await getURL(containerName, port);
       mainWindow?.webContents.send('lab-url', url);
@@ -326,13 +348,18 @@ ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
   // console.log(sudoUser);
   // Check if image of the container exists
 
-  const [mainCommand, args, containerName] = formatCommand(givenCommand, true);
-  console.log(mainCommand, args[0], containerName);
+  const givenCmdFormatted = formatCommand(givenCommand, true);
+  const { command, commandArgs, containerName } = givenCmdFormatted;
+  console.log(
+    givenCmdFormatted.command,
+    givenCmdFormatted.commandArgs,
+    givenCmdFormatted.containerName,
+  );
   const checkImageCommand = `docker images --format "{{.Repository}}"`;
   const formatted = formatCommand(checkImageCommand);
   // console.log(formatted);
-  const checkImageToRun = formatted[0].concat(` ${checkImageCommand}`);
-  console.log('here');
+  const checkImageToRun = formatted.commandAsString;
+  console.log('FORMATTED IMAGE CHECK');
   console.log(checkImageToRun);
   exec(checkImageToRun, async (err, stdout, stderr) => {
     console.log(err?.message);
@@ -343,48 +370,55 @@ ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
       console.log('ICLUDES THE IMAGE');
       mainWindow?.webContents.send('image-exists', true);
       // console.log(`container name: ${containerName}`);
-      // Check if container exists
-      exec(
-        `sudo docker container ls -a --format "{{.Names}}"`,
-        (_err, containers) => {
-          console.log(containers);
-          if (containers.includes(containerName)) {
-            console.log('ICLUDES THE CONTAINER');
-            // Is the container running?
-            exec(
-              `sudo docker container ls --format "{{.Names}}"`,
-              async (errorMsg, runningContainers, stderrMsg) => {
-                if (runningContainers.includes(containerName)) {
-                  console.log('IS RUNNING');
-                  console.log(errorMsg);
-                  console.log(stderrMsg);
-                  mainWindow?.webContents.send(
-                    'cli-output',
-                    `An environment already exists. Getting environment URL...`,
-                  );
-                  const url = await getURL(containerName, port);
-                  mainWindow?.webContents.send('lab-url', url);
-                  mainWindow?.webContents.send(
-                    'cli-output',
-                    `Environment running on: ${url}`,
-                  );
-                } else {
-                  console.log('IS NOT RUNNING');
-                  exec(`sudo docker container rm ${containerName}`);
-                  dockerRun(mainCommand, args, containerName, port);
-                }
-              },
-            );
-          } else {
-            console.log('DOES NOT INCLUDE THE CONTAINER');
-            dockerRun(mainCommand, args, containerName, port);
-          }
-        },
+      const checkFormatted = formatCommand(
+        `docker container ls -a --format "{{.Names}}"`,
       );
+      console.log(checkFormatted.commandAsString);
+      // Check if container exists
+      exec(checkFormatted.commandAsString, (_err, containers) => {
+        console.log(containers);
+        if (containers.includes(containerName)) {
+          console.log('ICLUDES THE CONTAINER');
+          // Is the container running?
+          const containersExec = formatCommand(
+            `docker container ls --format "{{.Names}}"`,
+          );
+          exec(
+            containersExec.commandAsString,
+            async (errorMsg, runningContainers, stderrMsg) => {
+              if (runningContainers.includes(containerName)) {
+                console.log('IS RUNNING');
+                console.log(errorMsg);
+                console.log(stderrMsg);
+                mainWindow?.webContents.send(
+                  'cli-output',
+                  `An environment already exists. Getting environment URL...`,
+                );
+                const url = await getURL(containerName, port);
+                mainWindow?.webContents.send('lab-url', url);
+                mainWindow?.webContents.send(
+                  'cli-output',
+                  `Environment running on: ${url}`,
+                );
+              } else {
+                console.log('IS NOT RUNNING');
+                const removeCmd = formatCommand(
+                  `docker container rm ${containerName}`,
+                );
+                exec(removeCmd.commandAsString);
+                dockerRun(command, commandArgs, containerName, port);
+              }
+            },
+          );
+        } else {
+          console.log('DOES NOT INCLUDE THE CONTAINER');
+          dockerRun(command, commandArgs, containerName, port);
+        }
+      });
     } else {
       console.log('DOES NOT INCLUDE THE IMAGE');
       mainWindow?.webContents.send('image-exists', false);
-      dockerRun(mainCommand, args, containerName, port);
+      dockerRun(command, commandArgs, containerName, port);
     }
   });
 });
