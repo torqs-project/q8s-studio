@@ -32,15 +32,15 @@ function BasicLayout() {
           </button>
           <button
             id="env"
-            className={navState === 'environmnent' ? 'selected' : ''}
+            className={navState === 'environment' ? 'selected' : ''}
             type="button"
             onClick={() => {
               // setShowModal('config');
               navigate('/clg');
-              setNavState('environmnent');
+              setNavState('environment');
             }}
           >
-            Environmnent output
+            Environment output
           </button>
         </div>
         <div id="footerRight">

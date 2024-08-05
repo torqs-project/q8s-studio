@@ -60,7 +60,9 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
 // Define the NavigationContextProps
 interface NavigationContextProps {
   navState: string;
-  setNavState: React.Dispatch<React.SetStateAction<string>>;
+  setNavState: React.Dispatch<
+    React.SetStateAction<'environment' | 'config' | ''>
+  >;
   envName: string;
   setEnvName: React.Dispatch<React.SetStateAction<string>>;
 }
