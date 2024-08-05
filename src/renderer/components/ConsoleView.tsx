@@ -83,7 +83,7 @@ export default function ConsoleView(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => {
-                  console.log("onclick");
+                  console.log('onclick');
                   console.log(labUrl);
 
                   window.open(new URL(labUrl));

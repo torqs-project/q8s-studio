@@ -88,7 +88,9 @@ export const useAppNavigation = () => {
  * @param {ReactNode} param0.children
  */
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const [navState, setNavState] = useState('config');
+  const [navState, setNavState] = useState<'' | 'config' | 'environment'>(
+    'config',
+  );
   const [envName, setEnvName] = useState('');
   // Memoize the value to avoid unnecessary re-renders
   const value = useMemo(

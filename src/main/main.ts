@@ -262,9 +262,15 @@ function validateSudoUser() {
     ipcMain.on('pass', (_event2, pwd = '') => {
       // Write the password to stdin of the sudo process
       sudoUser.stdin?.write(`${pwd}\n`);
-      // End the stdin stream
-      sudoUser.stdin.end();
     });
+  });
+  sudoUser.on('close', (code) => {
+    if (code === 1) {
+      console.log(`closed with code:${code}`);
+      console.log('too many incorrect password attempts');
+    }
+    // End the stdin stream
+    sudoUser.stdin.end();
   });
 }
 

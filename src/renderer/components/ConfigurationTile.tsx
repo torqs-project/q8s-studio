@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import runIcon from '../../../assets/icons/run.svg';
 import deleteIcon from '../../../assets/icons/delete.svg';
