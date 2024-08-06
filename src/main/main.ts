@@ -89,6 +89,140 @@ function formatCommand(
   }
   return resultObject;
 }
+
+/**
+ * Gets the URL of the container.
+ *
+ * @async
+ * @param {string} containerName The name of the container.
+ * @param {string} port The port of the container.
+ */
+async function getURL(containerName: string, port: string) {
+  // Has more props, but these are used here
+  let urlPropsJSON: { token: string } = {
+    token: '',
+  };
+  // Execute a command that gets the parameters of the jupyter lab instance
+  const dockerExecCmd = formatCommand(
+    `docker exec ${containerName} jupyter lab list --json`,
+  );
+  const out = execSync(dockerExecCmd.commandAsString);
+  try {
+    urlPropsJSON = JSON.parse(out.toString());
+    const url = `http://localhost:${port}/lab?token=${urlPropsJSON.token}`;
+    console.log(url);
+    return url;
+  } catch (error) {
+    console.log(error);
+    return '';
+  }
+}
+
+/**
+ * Spawns a child process for the docker container and sends the output to the renderer
+ * @param mainCommand Command to run
+ * @param args Arguments for the command
+ * @param containerName Name of the docker container
+ * @param port The port where to run the container
+ */
+async function dockerRun(
+  mainCommand: string,
+  args: string[],
+  containerName: string,
+  port: string,
+) {
+  const dockerProcess = spawn(mainCommand, args);
+  if (dockerProcess.pid) {
+    allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
+  }
+  // Handle stdio
+  // For some reason output from docker goes to stderr instead of stdout.
+  dockerProcess.stderr?.on('data', async (msg: Buffer) => {
+    mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
+    if (msg.toString().includes('To access the server')) {
+      const url = await getURL(containerName, port);
+      mainWindow?.webContents.send('lab-url', url);
+      mainWindow?.webContents.send(
+        'cli-output',
+        `Environment running on: ${url}`,
+      );
+    }
+    return `${msg.toString()}err`;
+  });
+  dockerProcess.on('exit', (code) => {
+    mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
+    if (dockerProcess.pid) {
+      const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
+      if (remIndex > -1) {
+        allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+      }
+    }
+  });
+}
+
+function runCommand(givenCommand: string, port: string) {
+  const givenCmdFormatted = formatCommand(givenCommand, true);
+  const { command, commandArgs, containerName } = givenCmdFormatted;
+  // Check if image of the container exists
+  const checkImageCommand = `docker images --format "{{.Repository}}"`;
+  const formatted = formatCommand(checkImageCommand);
+  const checkImageToRun = formatted.commandAsString;
+  exec(checkImageToRun, async (_err, stdout) => {
+    const dataAsString = stdout;
+    if (dataAsString.includes('torqs-project/q8s-devenv')) {
+      console.log('ICLUDES THE IMAGE');
+      mainWindow?.webContents.send('image-exists', true);
+      // Check if container exists
+      const checkFormatted = formatCommand(
+        `docker container ls -a --format "{{.Names}}"`,
+      );
+      exec(checkFormatted.commandAsString, (_errContainer, containers) => {
+        if (containers.includes(containerName)) {
+          console.log('ICLUDES THE CONTAINER');
+          // Check if the container is running
+          const containersExec = formatCommand(
+            `docker container ls --format "{{.Names}}"`,
+          );
+          exec(
+            containersExec.commandAsString,
+            async (errorMsg, runningContainers, stderrMsg) => {
+              if (runningContainers.includes(containerName)) {
+                console.log('IS RUNNING');
+                console.log(errorMsg);
+                console.log(stderrMsg);
+                mainWindow?.webContents.send(
+                  'cli-output',
+                  `An environment already exists. Getting environment URL...`,
+                );
+                const url = await getURL(containerName, port);
+                mainWindow?.webContents.send('lab-url', url);
+                mainWindow?.webContents.send(
+                  'cli-output',
+                  `Environment running on: ${url}`,
+                );
+              } else {
+                console.log('IS NOT RUNNING');
+                // Remove the container before starting a new one, because the port might differ from the existing container's port
+                exec(
+                  formatCommand(`docker container rm ${containerName}`)
+                    .commandAsString,
+                );
+                dockerRun(command, commandArgs, containerName, port);
+              }
+            },
+          );
+        } else {
+          console.log('DOES NOT INCLUDE THE CONTAINER');
+          dockerRun(command, commandArgs, containerName, port);
+        }
+      });
+    } else {
+      console.log('DOES NOT INCLUDE THE IMAGE');
+      mainWindow?.webContents.send('image-exists', false); // Show 'stop download' button on the renderer
+      dockerRun(command, commandArgs, containerName, port);
+    }
+  });
+}
 /* ---------------------------------------
   Local file handling
  ----------------------------------------*/
@@ -245,61 +379,36 @@ ipcMain.handle('getPort', () =>
 );
 
 /** Function to validate a sudo user. */
-function validateSudoUser() {
-  // Spawn a new process for sudo
-  const sudoUser = spawn('sudo', ['-v', '-S']);
-  // Listen for data from stdout of the sudo process
-  sudoUser.stdout?.on('data', (out: Buffer) => {
-    // Send output to renderer
-    mainWindow?.webContents.send('cli-output', `${out.toString()}`);
-  });
-  // Listen for data from stderr of the sudo process
-  sudoUser.stderr?.on('data', (msg: Buffer) => {
-    // Send message to renderer to include a password input
-    mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
-    mainWindow?.webContents.send('ask-pass', true);
-    // Pass the returning password from renderer to the child process
-    ipcMain.on('pass', (_event2, pwd = '') => {
-      // Write the password to stdin of the sudo process
-      sudoUser.stdin?.write(`${pwd}\n`);
+async function validateSudoUser() {
+  return new Promise((resolve, reject) => {
+    // Spawn a new process for sudo
+    const sudoUser = spawn('sudo', ['-v', '-S']);
+    // Listen for data from stdout of the sudo process
+    sudoUser.stdout?.on('data', (out: Buffer) => {
+      // Send output to renderer
+      mainWindow?.webContents.send('cli-output', `${out.toString()}`);
+    });
+    // Listen for data from stderr of the sudo process
+    sudoUser.stderr?.on('data', (msg: Buffer) => {
+      // Send message to renderer to include a password input
+      mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
+      mainWindow?.webContents.send('ask-pass', true);
+      // Pass the returning password from renderer to the child process
+      ipcMain.on('pass', (_event2, pwd = '') => {
+        // Write the password to stdin of the sudo process
+        sudoUser.stdin?.write(`${pwd}\n`);
+      });
+    });
+    sudoUser.on('close', (code) => {
+      if (code === 1) {
+        reject(new Error(`closed with code:${code}`));
+        console.log(`closed with code:${code}`);
+        console.log('too many incorrect password attempts');
+      } else resolve(true);
+      // End the stdin stream
+      sudoUser.stdin.end();
     });
   });
-  sudoUser.on('close', (code) => {
-    if (code === 1) {
-      console.log(`closed with code:${code}`);
-      console.log('too many incorrect password attempts');
-    }
-    // End the stdin stream
-    sudoUser.stdin.end();
-  });
-}
-
-/**
- * Gets the URL of the container.
- *
- * @async
- * @param {string} containerName The name of the container.
- * @param {string} port The port of the container.
- */
-async function getURL(containerName: string, port: string) {
-  // Has more props, but these are used here
-  let urlPropsJSON: { token: string } = {
-    token: '',
-  };
-  // Execute a command that gets the parameters of the jupyter lab instance
-  const dockerExecCmd = formatCommand(
-    `docker exec ${containerName} jupyter lab list --json`,
-  );
-  const out = execSync(dockerExecCmd.commandAsString);
-  try {
-    urlPropsJSON = JSON.parse(out.toString());
-    const url = `http://localhost:${port}/lab?token=${urlPropsJSON.token}`;
-    console.log(url);
-    return url;
-  } catch (error) {
-    console.log(error);
-    return '';
-  }
 }
 
 // async function dockerStart(containerName: string, port: string) {
@@ -321,112 +430,23 @@ async function getURL(containerName: string, port: string) {
 //   });
 // }
 
-/**
- * Spawns a child process for the docker container and sends the output to the renderer
- * @param mainCommand Command to run
- * @param args Arguments for the command
- * @param containerName Name of the docker container
- * @param port The port where to run the container
- */
-async function dockerRun(
-  mainCommand: string,
-  args: string[],
-  containerName: string,
-  port: string,
-) {
-  const dockerProcess = spawn(mainCommand, args);
-  if (dockerProcess.pid) {
-    allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
-  }
-  // Handle stdio
-  // For some reason output from docker goes to stderr instead of stdout.
-  dockerProcess.stderr?.on('data', async (msg: Buffer) => {
-    mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
-    if (msg.toString().includes('To access the server')) {
-      const url = await getURL(containerName, port);
-      mainWindow?.webContents.send('lab-url', url);
-      mainWindow?.webContents.send(
-        'cli-output',
-        `Environment running on: ${url}`,
-      );
-    }
-    return `${msg.toString()}err`;
-  });
-  dockerProcess.on('exit', (code) => {
-    mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
-    if (dockerProcess.pid) {
-      const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
-      if (remIndex > -1) {
-        allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
-      }
-    }
-  });
-}
-
 ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
   // Validate sudo user's credentials if on linux
-  if (process.platform === 'linux') validateSudoUser();
-  const givenCmdFormatted = formatCommand(givenCommand, true);
-  const { command, commandArgs, containerName } = givenCmdFormatted;
-  // Check if image of the container exists
-  const checkImageCommand = `docker images --format "{{.Repository}}"`;
-  const formatted = formatCommand(checkImageCommand);
-  const checkImageToRun = formatted.commandAsString;
-  exec(checkImageToRun, async (_err, stdout) => {
-    const dataAsString = stdout;
-    if (dataAsString.includes('torqs-project/q8s-devenv')) {
-      console.log('ICLUDES THE IMAGE');
-      mainWindow?.webContents.send('image-exists', true);
-      // Check if container exists
-      const checkFormatted = formatCommand(
-        `docker container ls -a --format "{{.Names}}"`,
-      );
-      exec(checkFormatted.commandAsString, (_errContainer, containers) => {
-        if (containers.includes(containerName)) {
-          console.log('ICLUDES THE CONTAINER');
-          // Check if the container is running
-          const containersExec = formatCommand(
-            `docker container ls --format "{{.Names}}"`,
-          );
-          exec(
-            containersExec.commandAsString,
-            async (errorMsg, runningContainers, stderrMsg) => {
-              if (runningContainers.includes(containerName)) {
-                console.log('IS RUNNING');
-                console.log(errorMsg);
-                console.log(stderrMsg);
-                mainWindow?.webContents.send(
-                  'cli-output',
-                  `An environment already exists. Getting environment URL...`,
-                );
-                const url = await getURL(containerName, port);
-                mainWindow?.webContents.send('lab-url', url);
-                mainWindow?.webContents.send(
-                  'cli-output',
-                  `Environment running on: ${url}`,
-                );
-              } else {
-                console.log('IS NOT RUNNING');
-                // Remove the container before starting a new one, because the port might differ from the existing container's port
-                exec(
-                  formatCommand(`docker container rm ${containerName}`)
-                    .commandAsString,
-                );
-                dockerRun(command, commandArgs, containerName, port);
-              }
-            },
-          );
-        } else {
-          console.log('DOES NOT INCLUDE THE CONTAINER');
-          dockerRun(command, commandArgs, containerName, port);
-        }
+  if (process.platform === 'linux') {
+    // Run command after validating sudo user
+    validateSudoUser()
+      .then((result) => {
+        console.log('Validated sudo user result');
+        console.log(result);
+        runCommand(givenCommand, port);
+      })
+      .catch((err: Error) => {
+        console.log('Error validating sudo user:');
+        console.log(err.message);
       });
-    } else {
-      console.log('DOES NOT INCLUDE THE IMAGE');
-      mainWindow?.webContents.send('image-exists', false); // Show 'stop download' button on the renderer
-      dockerRun(command, commandArgs, containerName, port);
-    }
-  });
+  } else {
+    runCommand(givenCommand, port);
+  }
 });
 
 /* ---------------------------------------
