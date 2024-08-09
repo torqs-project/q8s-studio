@@ -39,22 +39,17 @@ class AppUpdater {
 }
 
 /**
- * Formats a command to be used in spawn function. If linux is used, adds sudo to the command.
+ * Formats a command to be used in spawn function.
  *
  * @param {string} commandToformat The command to format
- * @param {boolean} [askPass=false] If sudo password is needed, askPass should be true
  * @returns An object with the command, arguments, the whole command as a string the container name
  */
-function formatCommand(
-  commandToformat: string,
-  askPass: boolean = false,
-): {
+function formatCommand(commandToformat: string): {
   command: string;
   commandArgs: string[];
   commandAsString: string;
   containerName: string;
 } {
-  const { platform } = process;
   // Split command to list of arguments
   const splitted = commandToformat.split(' ');
   // Get the command
@@ -63,30 +58,12 @@ function formatCommand(
   const cmdArgs = splitted.slice(1);
   // eslint-disable-next-line prefer-destructuring
   const containerName = splitted[3];
-  let resultObject = {
+  const resultObject = {
     command: cmd,
     commandArgs: cmdArgs,
     commandAsString: commandToformat,
     containerName,
   };
-  if (platform === 'linux') {
-    let command: string[] = [];
-    if (askPass) command = ['-S']; // Use -S to ask the sudo password and show it in the output
-    command = command.concat(splitted);
-    const result: [string, string[], string] = ['sudo', command, containerName];
-    const commandAsString = result[0]
-      .concat(` ${result[1]}`)
-      .replaceAll(',', ' ');
-    console.log('Command as string:');
-    console.log(commandAsString);
-    resultObject = {
-      command: result[0],
-      commandArgs: result[1],
-      commandAsString,
-      containerName: result[2],
-    };
-    return resultObject;
-  }
   return resultObject;
 }
 
@@ -161,7 +138,7 @@ async function dockerRun(
 }
 
 function runCommand(givenCommand: string, port: string) {
-  const givenCmdFormatted = formatCommand(givenCommand, true);
+  const givenCmdFormatted = formatCommand(givenCommand);
   const { command, commandArgs, containerName } = givenCmdFormatted;
   // Check if image of the container exists
   const checkImageCommand = `docker images --format "{{.Repository}}"`;
@@ -223,6 +200,7 @@ function runCommand(givenCommand: string, port: string) {
     }
   });
 }
+
 /* ---------------------------------------
   Local file handling
  ----------------------------------------*/
@@ -378,39 +356,6 @@ ipcMain.handle('getPort', () =>
     .catch((err) => console.log(err)),
 );
 
-/** Function to validate a sudo user. */
-async function validateSudoUser() {
-  return new Promise((resolve, reject) => {
-    // Spawn a new process for sudo
-    const sudoUser = spawn('sudo', ['-v', '-S']);
-    // Listen for data from stdout of the sudo process
-    sudoUser.stdout?.on('data', (out: Buffer) => {
-      // Send output to renderer
-      mainWindow?.webContents.send('cli-output', `${out.toString()}`);
-    });
-    // Listen for data from stderr of the sudo process
-    sudoUser.stderr?.on('data', (msg: Buffer) => {
-      // Send message to renderer to include a password input
-      mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
-      mainWindow?.webContents.send('ask-pass', true);
-      // Pass the returning password from renderer to the child process
-      ipcMain.on('pass', (_event2, pwd = '') => {
-        // Write the password to stdin of the sudo process
-        sudoUser.stdin?.write(`${pwd}\n`);
-      });
-    });
-    sudoUser.on('close', (code) => {
-      if (code === 1) {
-        reject(new Error(`closed with code:${code}`));
-        console.log(`closed with code:${code}`);
-        console.log('too many incorrect password attempts');
-      } else resolve(true);
-      // End the stdin stream
-      sudoUser.stdin.end();
-    });
-  });
-}
-
 // async function dockerStart(containerName: string, port: string) {
 //   const cmdStartContainer = `docker start ${containerName} -a`;
 //   const containerCommand = formatCommand(cmdStartContainer);
@@ -431,22 +376,7 @@ async function validateSudoUser() {
 // }
 
 ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
-  // Validate sudo user's credentials if on linux
-  if (process.platform === 'linux') {
-    // Run command after validating sudo user
-    validateSudoUser()
-      .then((result) => {
-        console.log('Validated sudo user result');
-        console.log(result);
-        runCommand(givenCommand, port);
-      })
-      .catch((err: Error) => {
-        console.log('Error validating sudo user:');
-        console.log(err.message);
-      });
-  } else {
-    runCommand(givenCommand, port);
-  }
+  runCommand(givenCommand, port);
 });
 
 /* ---------------------------------------
