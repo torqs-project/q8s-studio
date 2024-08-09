@@ -96,109 +96,155 @@ async function getURL(containerName: string, port: string) {
 }
 
 /**
- * Spawns a child process for the docker container and sends the output to the renderer
- * @param mainCommand Command to run
- * @param args Arguments for the command
- * @param containerName Name of the docker container
- * @param port The port where to run the container
+ * Executes a shell command and returns the output as a promise.
+ * @param command The shell command to execute.
+ * @returns A promise that resolves with the command output.
  */
-async function dockerRun(
-  mainCommand: string,
-  args: string[],
-  containerName: string,
-  port: string,
-) {
-  const dockerProcess = spawn(mainCommand, args);
-  if (dockerProcess.pid) {
-    allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
-  }
-  // Handle stdio
-  // For some reason output from docker goes to stderr instead of stdout.
-  dockerProcess.stderr?.on('data', async (msg: Buffer) => {
-    mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
-    if (msg.toString().includes('To access the server')) {
-      const url = await getURL(containerName, port);
-      mainWindow?.webContents.send('lab-url', url);
-      mainWindow?.webContents.send(
-        'cli-output',
-        `Environment running on: ${url}`,
-      );
-    }
-    return `${msg.toString()}err`;
-  });
-  dockerProcess.on('exit', (code) => {
-    mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
-    if (dockerProcess.pid) {
-      const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
-      if (remIndex > -1) {
-        allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+async function runCommand(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        return reject(stderr);
       }
-    }
+      return resolve(stdout);
+    });
   });
 }
 
-function runCommand(givenCommand: string, port: string) {
-  const givenCmdFormatted = formatCommand(givenCommand);
-  const { command, commandArgs, containerName } = givenCmdFormatted;
-  // Check if image of the container exists
-  const checkImageCommand = `docker images --format "{{.Repository}}"`;
-  const formatted = formatCommand(checkImageCommand);
-  const checkImageToRun = formatted.commandAsString;
-  exec(checkImageToRun, async (_err, stdout) => {
-    const dataAsString = stdout;
-    if (dataAsString.includes('torqs-project/q8s-devenv')) {
-      console.log('ICLUDES THE IMAGE');
-      mainWindow?.webContents.send('image-exists', true);
-      // Check if container exists
-      const checkFormatted = formatCommand(
-        `docker container ls -a --format "{{.Names}}"`,
-      );
-      exec(checkFormatted.commandAsString, (_errContainer, containers) => {
+/**
+ * Creates an environment manager for the Docker container.
+ * This encapsulates container-specific values, reducing the need to pass them around.
+ * @param command The Docker command to run.
+ * @param commandArgs Arguments for the Docker command.
+ * @param containerName The name of the Docker container.
+ * @param port The port to be used by the container.
+ * @returns An object with methods to manage the Docker environment.
+ */
+function createEnvManager(
+  command: string,
+  commandArgs: string[],
+  containerName: string,
+  port: string,
+) {
+  return {
+    /**
+     * Checks if the Docker image exists and handles the container accordingly.
+     * This is the main entry point to start the process.
+     */
+    async checkImage(): Promise<void> {
+      try {
+        const images = await runCommand(
+          `docker image ls --format "{{.Repository}}:{{.Tag}}"`,
+        );
+
+        if (images.includes('torqs-project/q8s-devenv')) {
+          mainWindow?.webContents.send('image-exists', true);
+          await this.checkContainer();
+        } else {
+          mainWindow?.webContents.send('image-exists', false);
+          await this.dockerRun();
+        }
+      } catch (error) {
+        console.error('Error checking image:', error);
+        mainWindow?.webContents.send('image-exists', false);
+        await this.dockerRun();
+      }
+    },
+
+    /**
+     * Checks if the container exists and handles it based on its status.
+     */
+    async checkContainer(): Promise<void> {
+      try {
+        const containers = await runCommand(
+          `docker container ls -a --format "{{.Names}}"`,
+        );
+
         if (containers.includes(containerName)) {
-          console.log('ICLUDES THE CONTAINER');
-          // Check if the container is running
-          const containersExec = formatCommand(
-            `docker container ls --format "{{.Names}}"`,
-          );
-          exec(
-            containersExec.commandAsString,
-            async (errorMsg, runningContainers, stderrMsg) => {
-              if (runningContainers.includes(containerName)) {
-                console.log('IS RUNNING');
-                console.log(errorMsg);
-                console.log(stderrMsg);
-                mainWindow?.webContents.send(
-                  'cli-output',
-                  `An environment already exists. Getting environment URL...`,
-                );
-                const url = await getURL(containerName, port);
-                mainWindow?.webContents.send('lab-url', url);
-                mainWindow?.webContents.send(
-                  'cli-output',
-                  `Environment running on: ${url}`,
-                );
-              } else {
-                console.log('IS NOT RUNNING');
-                // Remove the container before starting a new one, because the port might differ from the existing container's port
-                exec(
-                  formatCommand(`docker container rm ${containerName}`)
-                    .commandAsString,
-                );
-                dockerRun(command, commandArgs, containerName, port);
-              }
-            },
+          await this.checkRunningContainers();
+        } else {
+          await this.dockerRun();
+        }
+      } catch (error) {
+        console.error('Error checking container:', error);
+        await this.dockerRun();
+      }
+    },
+
+    /**
+     * Checks if the container is running and handles it based on its status.
+     */
+    async checkRunningContainers(): Promise<void> {
+      try {
+        const runningContainers = await runCommand(
+          `docker container ls --format "{{.Names}}"`,
+        );
+
+        if (runningContainers.includes(containerName)) {
+          console.log('IS RUNNING');
+          const url = await getURL(containerName, port);
+          mainWindow?.webContents.send('lab-url', url);
+          mainWindow?.webContents.send(
+            'cli-output',
+            `Environment running on: ${url}`,
           );
         } else {
-          console.log('DOES NOT INCLUDE THE CONTAINER');
-          dockerRun(command, commandArgs, containerName, port);
+          console.log('IS NOT RUNNING');
+          await this.removeAndRunContainer();
+        }
+      } catch (error) {
+        console.error('Error checking running containers:', error);
+        await this.removeAndRunContainer();
+      }
+    },
+
+    /**
+     * Removes the existing container and runs it.
+     * Can't use 'docker start' because port cannot be changed on a existing container.
+     */
+    async removeAndRunContainer(): Promise<void> {
+      try {
+        await runCommand(`docker container rm ${containerName}`);
+        await this.dockerRun();
+      } catch (error) {
+        console.error('Error removing and running container:', error);
+        await this.dockerRun();
+      }
+    },
+
+    /**
+     * Spawns a child process for the docker container and sends the output to the renderer
+     */
+    async dockerRun() {
+      const dockerProcess = spawn(command, commandArgs);
+      if (dockerProcess.pid) {
+        allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
+      }
+      // Handle stdio
+      // For some reason output from docker goes to stderr instead of stdout.
+      dockerProcess.stderr?.on('data', async (msg: Buffer) => {
+        mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
+        if (msg.toString().includes('To access the server')) {
+          const url = await getURL(containerName, port);
+          mainWindow?.webContents.send('lab-url', url);
+          mainWindow?.webContents.send(
+            'cli-output',
+            `Environment running on: ${url}`,
+          );
+        }
+        return `${msg.toString()}err`;
+      });
+      dockerProcess.on('exit', (code) => {
+        mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
+        if (dockerProcess.pid) {
+          const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
+          if (remIndex > -1) {
+            allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+          }
         }
       });
-    } else {
-      console.log('DOES NOT INCLUDE THE IMAGE');
-      mainWindow?.webContents.send('image-exists', false); // Show 'stop download' button on the renderer
-      dockerRun(command, commandArgs, containerName, port);
-    }
-  });
+    },
+  };
 }
 
 /* ---------------------------------------
@@ -356,27 +402,18 @@ ipcMain.handle('getPort', () =>
     .catch((err) => console.log(err)),
 );
 
-// async function dockerStart(containerName: string, port: string) {
-//   const cmdStartContainer = `docker start ${containerName} -a`;
-//   const containerCommand = formatCommand(cmdStartContainer);
-//   console.log(containerCommand);
-//   const containerProcess = spawn(containerCommand[0], containerCommand[1]);
-//   if (containerProcess.pid) {
-//     allChildProcessess.push(containerProcess.pid); // Add child process to list of all child processes for killing when exiting app
-//   }
-//   containerProcess.stderr.on('data', async (data) => {
-//     mainWindow?.webContents.send(
-//       'cli-output',
-//       `DOCKER START: ${data.toString()}`,
-//     );
-//   });
-//   containerProcess.on('exit', (code) => {
-//     mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
-//   });
-// }
-
 ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
-  runCommand(givenCommand, port);
+  const givenCmdFormatted = formatCommand(givenCommand);
+  const { command, commandArgs, containerName } = givenCmdFormatted;
+
+  const envManager = createEnvManager(
+    command,
+    commandArgs,
+    containerName,
+    port,
+  );
+  // Start the docker process
+  envManager.checkImage();
 });
 
 /* ---------------------------------------
