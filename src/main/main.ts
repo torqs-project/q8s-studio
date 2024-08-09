@@ -90,10 +90,13 @@ async function runCommand(command: string): Promise<string> {
  * @param {string} containerName The name of the container.
  */
 async function getURL(containerName: string) {
+  const commandNormalized =
+    process.platform === 'win32'
+      ? `docker inspect --format="{{(index (index .NetworkSettings.Ports \\"8888/tcp\\") 0).HostPort}}" ${containerName}`
+      : `docker inspect --format='{{(index (index .NetworkSettings.Ports "8888/tcp") 0).HostPort}}' ${containerName}`;
+  console.log(commandNormalized);
   // Get the host port of the container
-  const port = await runCommand(
-    `docker inspect --format='{{(index (index .NetworkSettings.Ports "8888/tcp") 0).HostPort}}' ${containerName}`,
-  );
+  const port = await runCommand(commandNormalized);
   // Has more props, but these are used here
   let urlPropsJSON: { token: string } = {
     token: '',
