@@ -68,13 +68,32 @@ function formatCommand(commandToformat: string): {
 }
 
 /**
+ * Executes a shell command and returns the output as a promise.
+ * @param command The shell command to execute.
+ * @returns A promise that resolves with the command output.
+ */
+async function runCommand(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        return reject(stderr);
+      }
+      return resolve(stdout);
+    });
+  });
+}
+
+/**
  * Gets the URL of the container.
  *
  * @async
  * @param {string} containerName The name of the container.
- * @param {string} port The port of the container.
  */
-async function getURL(containerName: string, port: string) {
+async function getURL(containerName: string) {
+  // Get the host port of the container
+  const port = await runCommand(
+    `docker inspect --format='{{(index (index .NetworkSettings.Ports "8888/tcp") 0).HostPort}}' ${containerName}`,
+  );
   // Has more props, but these are used here
   let urlPropsJSON: { token: string } = {
     token: '',
@@ -96,35 +115,17 @@ async function getURL(containerName: string, port: string) {
 }
 
 /**
- * Executes a shell command and returns the output as a promise.
- * @param command The shell command to execute.
- * @returns A promise that resolves with the command output.
- */
-async function runCommand(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        return reject(stderr);
-      }
-      return resolve(stdout);
-    });
-  });
-}
-
-/**
  * Creates an environment manager for the Docker container.
  * This encapsulates container-specific values, reducing the need to pass them around.
  * @param command The Docker command to run.
  * @param commandArgs Arguments for the Docker command.
  * @param containerName The name of the Docker container.
- * @param port The port to be used by the container.
  * @returns An object with methods to manage the Docker environment.
  */
 function createEnvManager(
   command: string,
   commandArgs: string[],
   containerName: string,
-  port: string,
 ) {
   return {
     /**
@@ -182,7 +183,7 @@ function createEnvManager(
 
         if (runningContainers.includes(containerName)) {
           console.log('IS RUNNING');
-          const url = await getURL(containerName, port);
+          const url = await getURL(containerName);
           mainWindow?.webContents.send('lab-url', url);
           mainWindow?.webContents.send(
             'cli-output',
@@ -225,7 +226,7 @@ function createEnvManager(
       dockerProcess.stderr?.on('data', async (msg: Buffer) => {
         mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
         if (msg.toString().includes('To access the server')) {
-          const url = await getURL(containerName, port);
+          const url = await getURL(containerName);
           mainWindow?.webContents.send('lab-url', url);
           mainWindow?.webContents.send(
             'cli-output',
@@ -402,16 +403,11 @@ ipcMain.handle('getPort', () =>
     .catch((err) => console.log(err)),
 );
 
-ipcMain.handle('runCommand', async (_event, givenCommand, port) => {
+ipcMain.handle('runCommand', async (_event, givenCommand) => {
   const givenCmdFormatted = formatCommand(givenCommand);
   const { command, commandArgs, containerName } = givenCmdFormatted;
 
-  const envManager = createEnvManager(
-    command,
-    commandArgs,
-    containerName,
-    port,
-  );
+  const envManager = createEnvManager(command, commandArgs, containerName);
   // Start the docker process
   envManager.checkImage();
 });
