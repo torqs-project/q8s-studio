@@ -150,7 +150,7 @@ function createEnvManager(
         }
       } catch (error) {
         console.error('Error checking image:', error);
-        mainWindow?.webContents.send('image-exists', false);
+        // mainWindow?.webContents.send('image-exists', false);
         await this.dockerRun();
       }
     },
@@ -220,33 +220,58 @@ function createEnvManager(
      * Spawns a child process for the docker container and sends the output to the renderer
      */
     async dockerRun() {
-      const dockerProcess = spawn(command, commandArgs);
-      if (dockerProcess.pid) {
-        allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
-      }
-      // Handle stdio
-      // For some reason output from docker goes to stderr instead of stdout.
-      dockerProcess.stderr?.on('data', async (msg: Buffer) => {
-        mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
-        if (msg.toString().includes('To access the server')) {
-          const url = await getURL(containerName);
-          mainWindow?.webContents.send('lab-url', url);
+      try {
+        const dockerProcess = spawn(command, commandArgs);
+        if (dockerProcess.pid) {
+          allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
+        }
+        // Handle stdio
+        // For some reason output from docker goes to stderr instead of stdout.
+        dockerProcess.stderr?.on('data', async (msg: Buffer) => {
+          mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
+          if (msg.toString().includes('To access the server')) {
+            const url = await getURL(containerName);
+            mainWindow?.webContents.send('lab-url', url);
+            mainWindow?.webContents.send(
+              'cli-output',
+              `Environment running on: ${url}`,
+            );
+          }
+          console.log(`stderr on dockerRun ${msg.toString()}`);
+          return `ERROR ON SPAWNING DOCKER PROCESS ${msg.toString()}`;
+        });
+        dockerProcess.on('exit', (code) => {
           mainWindow?.webContents.send(
             'cli-output',
-            `Environment running on: ${url}`,
+            `Exited with code: ${code}`,
           );
-        }
-        return `${msg.toString()}err`;
-      });
-      dockerProcess.on('exit', (code) => {
-        mainWindow?.webContents.send('cli-output', `Exited with code: ${code}`);
-        if (dockerProcess.pid) {
-          const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
-          if (remIndex > -1) {
-            allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+          switch (code) {
+            case 125:
+              dialog.showErrorBox(
+                'Error with docker daemon',
+                `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+              );
+              console.log('Error with docker daemon');
+              break;
+            case 126:
+              console.log('Error with docker command');
+              break;
+            case 127:
+              console.log('Error with docker command not found');
+              break;
+            default:
+              break;
           }
-        }
-      });
+          if (dockerProcess.pid) {
+            const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
+            if (remIndex > -1) {
+              allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+            }
+          }
+        });
+      } catch (error) {
+        console.log(`Error: ${error.msg}`);
+      }
     },
   };
 }
@@ -411,6 +436,17 @@ ipcMain.handle('runCommand', async (_event, givenCommand) => {
   const { command, commandArgs, containerName } = givenCmdFormatted;
 
   const envManager = createEnvManager(command, commandArgs, containerName);
+  // Check if docker command exists
+  try {
+    await runCommand(`docker images`);
+  } catch (error) {
+    console.log(`Error docker: ${error}`);
+    dialog.showErrorBox(
+      'Error starting Docker',
+      `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+    );
+    return;
+  }
   // Start the docker process
   envManager.checkImage();
 });
