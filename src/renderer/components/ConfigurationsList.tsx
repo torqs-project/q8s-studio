@@ -16,7 +16,14 @@ function ConfigurationsList({ children }: PropsWithChildren) {
   };
 
   useEffect(() => {
-    loadFiles();
+    loadFiles()
+      .then((result) => {
+        window.electronAPI.checkDocker();
+        return result;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   return (

@@ -270,7 +270,7 @@ function createEnvManager(
           }
         });
       } catch (error) {
-        console.log(`Error: ${error.msg}`);
+        console.log(`Error: ${error}`);
       }
     },
   };
@@ -417,6 +417,17 @@ ipcMain.handle('loadFiles', () => {
 });
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
+});
+ipcMain.handle('checkDocker', async () => {
+  try {
+    await runCommand(`docker images`);
+  } catch (error) {
+    console.log(`Error docker: ${error}`);
+    dialog.showErrorBox(
+      'Qubernetes Studio needs Docker to work.',
+      `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+    );
+  }
 });
 ipcMain.handle('killProcess', (event, containerName) => {
   killAllProcessess(allChildProcessess, containerName);

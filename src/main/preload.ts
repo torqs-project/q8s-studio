@@ -48,6 +48,7 @@ const electronAPI = {
   askPass: (callback: (data: boolean) => void) => {
     ipcRenderer.on('ask-pass', (event, data) => callback(data));
   },
+  checkDocker: () => ipcRenderer.invoke('checkDocker'),
   /**
    * Send the password to the main process
    * @param value the password to send
