@@ -23,7 +23,7 @@ export default class MenuBuilder {
       process.env.NODE_ENV === 'development' ||
       process.env.DEBUG_PROD === 'true'
     ) {
-      this.setupDevelopmentEnvironment();
+      // this.setupDevelopmentEnvironment();
     }
 
     const template =
@@ -32,8 +32,16 @@ export default class MenuBuilder {
         : this.buildDefaultTemplate();
 
     const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
-
+    this.mainWindow.webContents.on('context-menu', () => {
+      Menu.buildFromTemplate([
+        {
+          label: 'Copy',
+          click: () => {
+            this.mainWindow.webContents.copy();
+          },
+        },
+      ]).popup({ window: this.mainWindow });
+    });
     return menu;
   }
 
@@ -46,6 +54,12 @@ export default class MenuBuilder {
           label: 'Inspect element',
           click: () => {
             this.mainWindow.webContents.inspectElement(x, y);
+          },
+        },
+        {
+          label: 'Copy',
+          click: () => {
+            this.mainWindow.webContents.copy();
           },
         },
       ]).popup({ window: this.mainWindow });
