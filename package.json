@@ -1,35 +1,26 @@
 {
-  "description": "A foundation for scalable desktop apps",
-  "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
-  ],
-  "homepage": "https://github.com/electron-react-boilerplate/electron-react-boilerplate#readme",
-  "bugs": {
-    "url": "https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues"
-  },
+  "name": "q8s-studio",
+  "version": "1.0.0",
+  "description": "An user-friendly electron application for accessing the Qubernetes kernel.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/torqs-project/q8s-studio"
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "Torqs-project",
+    "email": "vstirbu@gmail.com"
   },
   "contributors": [
     {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
+      "name": "edciriac",
+      "email": "edciriac@jyu.fi",
+      "url": "https://github.com/edciriac"
+    },
+    {
+      "name": "Vlad Stirbu",
+      "email": "vstirbu@gmail.com",
+      "url": "http://www.vladstirbu.com"
     }
   ],
   "main": "./src/main/main.ts",
@@ -174,7 +165,7 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "Qubernetes Studio",
+    "productName": "QubernetesStudio",
     "appId": "org.erb.ElectronReact",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
@@ -219,7 +210,7 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage", "deb"
       ],
       "category": "Development"
     },
@@ -233,12 +224,10 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "torqs-project",
+      "repo": "q8s-studio",
+      "releaseType": "release"
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",
