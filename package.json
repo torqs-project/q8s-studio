@@ -1,6 +1,6 @@
 {
   "name": "q8s-studio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An user-friendly electron application for accessing the Qubernetes kernel.",
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
     "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
+    "publish": "npm exec electron-builder -- --publish always",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
     "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
