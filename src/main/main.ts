@@ -76,6 +76,10 @@ async function runCommand(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
+        console.log(`Error on command: ${command}`);
+        // console.log(`Error: ${error.code}`);
+        mainWindow?.webContents.send('errorCode', error.code);
+        mainWindow?.webContents.send('error', error);
         return reject(stderr);
       }
       return resolve(stdout);
@@ -420,7 +424,7 @@ ipcMain.handle('openFile', (event, arg) => {
 });
 ipcMain.handle('checkDocker', async () => {
   try {
-    await runCommand(`docker images`);
+    await runCommand(`docker info`);
   } catch (error) {
     console.log(`Error docker: ${error}`);
     dialog.showErrorBox(

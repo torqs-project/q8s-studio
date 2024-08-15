@@ -92,11 +92,11 @@ const electronAPI = {
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
-electronAPI.on('image-exists', (event, value) => {
-  console.log('image-exists', value);
+electronAPI.on('error', (event, error) => {
+  window.console.error(error);
 });
-electronAPI.on('cli-output', (event, value) => {
-  console.log('cli-output', value);
+electronAPI.on('errorCode', (event, errorCode) => {
+  window.console.error('Error code:', errorCode);
 });
 
 export type ElectronAPI = typeof electronAPI;
