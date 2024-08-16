@@ -39,6 +39,9 @@ class AppUpdater {
   }
 }
 
+function renameContainerName(configurationName: string) {
+  return configurationName.trim().replaceAll(' ', '_');
+}
 /**
  * Formats a command to be used in spawn function.
  *
@@ -86,40 +89,6 @@ async function runCommand(command: string): Promise<string> {
       return resolve(stdout);
     });
   });
-}
-
-/**
- * Gets the URL of the container.
- *
- * @async
- * @param {string} containerName The name of the container.
- */
-async function getURL(containerName: string) {
-  const commandNormalized =
-    process.platform === 'win32'
-      ? `docker inspect --format="{{(index (index .NetworkSettings.Ports \\"8888/tcp\\") 0).HostPort}}" ${containerName}`
-      : `docker inspect --format='{{(index (index .NetworkSettings.Ports "8888/tcp") 0).HostPort}}' ${containerName}`;
-  console.log(commandNormalized);
-  // Get the host port of the container
-  const port = await runCommand(commandNormalized);
-  // Has more props, but these are used here
-  let urlPropsJSON: { token: string } = {
-    token: '',
-  };
-  // Execute a command that gets the parameters of the jupyter lab instance
-  const dockerExecCmd = formatCommand(
-    `docker exec ${containerName} jupyter lab list --json`,
-  );
-  const out = execSync(dockerExecCmd.commandAsString);
-  try {
-    urlPropsJSON = JSON.parse(out.toString());
-    const url = `http://localhost:${port}/lab?token=${urlPropsJSON.token}`;
-    console.log(url);
-    return url;
-  } catch (error) {
-    console.log(error);
-    return '';
-  }
 }
 
 /**
@@ -191,7 +160,7 @@ function createEnvManager(
 
         if (runningContainers.includes(containerName)) {
           console.log('IS RUNNING');
-          const url = await getURL(containerName);
+          const url = await this.getURL();
           mainWindow?.webContents.send('lab-url', url);
           mainWindow?.webContents.send(
             'cli-output',
@@ -222,6 +191,37 @@ function createEnvManager(
     },
 
     /**
+     * Gets the URL of the container.
+     * @async
+     */
+    async getURL() {
+      const commandNormalized =
+        process.platform === 'win32'
+          ? `docker inspect --format="{{(index (index .NetworkSettings.Ports \\"8888/tcp\\") 0).HostPort}}" ${containerName}`
+          : `docker inspect --format='{{(index (index .NetworkSettings.Ports "8888/tcp") 0).HostPort}}' ${containerName}`;
+      console.log(commandNormalized);
+      // Get the host port of the container
+      const port = await runCommand(commandNormalized);
+      // Has more props, but these are used here
+      let urlPropsJSON: { token: string } = {
+        token: '',
+      };
+      // Execute a command that gets the parameters of the jupyter lab instance
+      const dockerExecCmd = formatCommand(
+        `docker exec ${containerName} jupyter lab list --json`,
+      );
+      const out = execSync(dockerExecCmd.commandAsString);
+      try {
+        urlPropsJSON = JSON.parse(out.toString());
+        const url = `http://localhost:${port}/lab?token=${urlPropsJSON.token}`;
+        console.log(url);
+        return url;
+      } catch (error) {
+        console.log(error);
+        return '';
+      }
+    },
+    /**
      * Spawns a child process for the docker container and sends the output to the renderer
      */
     async dockerRun() {
@@ -235,7 +235,7 @@ function createEnvManager(
         dockerProcess.stderr?.on('data', async (msg: Buffer) => {
           mainWindow?.webContents.send('cli-output', `${msg.toString()}`);
           if (msg.toString().includes('To access the server')) {
-            const url = await getURL(containerName);
+            const url = await this.getURL();
             mainWindow?.webContents.send('lab-url', url);
             mainWindow?.webContents.send(
               'cli-output',
@@ -395,8 +395,7 @@ async function handleFileOpen(sender: WebContents, isDirectory: boolean) {
  * @param {?string} [containerName] The name of the container to be stopped, if it is known
  */
 function killAllProcessess(processes: number[], containerName?: string) {
-  const killCommand = formatCommand(`docker kill ${containerName}`);
-  if (containerName) exec(killCommand.commandAsString);
+  if (containerName) exec(`docker kill ${containerName}`);
   processes.forEach((childPID: number) => {
     console.log(processes);
     try {
@@ -434,8 +433,8 @@ ipcMain.handle('checkDocker', async () => {
     );
   }
 });
-ipcMain.handle('killProcess', (event, containerName) => {
-  killAllProcessess(allChildProcessess, containerName);
+ipcMain.handle('killProcess', (event, configurationName) => {
+  killAllProcessess(allChildProcessess, renameContainerName(configurationName));
   return 'All child processes killed';
 });
 ipcMain.handle('getPort', () =>
@@ -451,12 +450,17 @@ ipcMain.handle(
   'runCommand',
   async (_event, givenConfigurations: SaveFormat) => {
     const command = 'docker';
+    // Change configuration name to a valid docker name
+
+    const containerName = renameContainerName(
+      givenConfigurations.configurationName,
+    );
 
     // Create the docker command arguments
     const commandArgs = [
       'run',
       '--name',
-      givenConfigurations.configurationName,
+      containerName,
       '-p',
       '8888:8888',
       '-v',
@@ -469,11 +473,7 @@ ipcMain.handle(
     ];
 
     console.log(commandArgs);
-    const envManager = createEnvManager(
-      command,
-      commandArgs,
-      givenConfigurations.configurationName,
-    );
+    const envManager = createEnvManager(command, commandArgs, containerName);
     // Check if docker command exists
     try {
       await runCommand(`docker images`);

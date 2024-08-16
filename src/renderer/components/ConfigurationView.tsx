@@ -58,7 +58,7 @@ export default function ConfigurationView() {
               name="name"
               id="name"
               value={configurationName}
-              pattern="^/?([a-zA-Z0-9_]+)$"
+              pattern="^/?([a-zA-Z0-9_ ]+)$"
               maxLength={255}
               onChange={(e) => {
                 setConfigurationName(e.target.value);
@@ -66,7 +66,7 @@ export default function ConfigurationView() {
                 // If configuration name contains whitespace, inform user that name cannot have spaces
                 if (!e.target.checkValidity()) {
                   e.target.setCustomValidity(
-                    'Name cannot contain spaces or special characters',
+                    'Name can only contain letters from A-Z,spaces and underscores. ',
                   );
                   e.target.reportValidity();
                 }

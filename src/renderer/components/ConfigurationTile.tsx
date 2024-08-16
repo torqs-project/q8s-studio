@@ -17,7 +17,7 @@ export default function ConfigurationTile({
   config,
   refreshConfigsList,
 }: ConfigurationTileProps): React.JSX.Element {
-  const { configurationName, kubeconfigPath, directoryPath } = config;
+  const { configurationName } = config;
   const { setNavState, setEnvName } = useAppNavigation();
   const navigate = useNavigate();
   return (
@@ -35,9 +35,6 @@ export default function ConfigurationTile({
               console.log(err);
               return 0;
             });
-          console.log(portToUse);
-          const commandToRun = `docker run --name ${configurationName} -p ${portToUse}:8888 -v ${kubeconfigPath}:/home/jupyter/.kube/config -v ${directoryPath}:/workspace --pull always ghcr.io/torqs-project/q8s-devenv:main`;
-          console.log(commandToRun);
           navigate('/clg');
           setNavState('environment');
           setEnvName(configurationName);
