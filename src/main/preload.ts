@@ -26,11 +26,11 @@ const electronAPI = {
   getPort: () => ipcRenderer.invoke('getPort').then((port) => port as number),
   /**
    * Runs the given command in main process as a child process
-   * @param command the command to run
+   * @param configurations the command to run
    * @returns the output of the command
    */
-  runCommand: (command: string | null, port: string) => {
-    return ipcRenderer.invoke('runCommand', command, port);
+  runCommand: (configurations: SaveFormat | null, port: string) => {
+    return ipcRenderer.invoke('runCommand', configurations, port);
   },
   /**
    * Kill the child process of the environment (docker container) and return the exit message.

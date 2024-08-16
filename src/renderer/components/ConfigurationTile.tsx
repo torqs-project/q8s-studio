@@ -42,7 +42,7 @@ export default function ConfigurationTile({
           setNavState('environment');
           setEnvName(configurationName);
           window.electronAPI
-            .runCommand(commandToRun, portToUse.toString())
+            .runCommand(config, portToUse.toString())
             .then((result: any) => {
               return result;
             })

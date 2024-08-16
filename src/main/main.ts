@@ -25,6 +25,7 @@ import fs from 'fs';
 import portscanner from 'portscanner';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { SaveFormat } from '../renderer/components/ConfigurationView';
 
 let mainWindow: BrowserWindow | null = null;
 const allChildProcessess: number[] = [];
@@ -446,25 +447,47 @@ ipcMain.handle('getPort', () =>
     .catch((err) => console.log(err)),
 );
 
-ipcMain.handle('runCommand', async (_event, givenCommand) => {
-  const givenCmdFormatted = formatCommand(givenCommand);
-  const { command, commandArgs, containerName } = givenCmdFormatted;
+ipcMain.handle(
+  'runCommand',
+  async (_event, givenConfigurations: SaveFormat) => {
+    const command = 'docker';
+    // Create the docker command arguments
+    const commandArgs = [
+      'run',
+      '--name',
+      givenConfigurations.configurationName,
+      '-p',
+      '8888:8888',
+      '-v',
+      `${givenConfigurations.kubeconfigPath}:/home/jupyter/.kube/config`,
+      '-v',
+      `${givenConfigurations.directoryPath}:/workspace`,
+      '--pull',
+      'always',
+      'ghcr.io/torqs-project/q8s-devenv:main',
+    ];
 
-  const envManager = createEnvManager(command, commandArgs, containerName);
-  // Check if docker command exists
-  try {
-    await runCommand(`docker images`);
-  } catch (error) {
-    console.log(`Error docker: ${error}`);
-    dialog.showErrorBox(
-      'Error starting Docker',
-      `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+    console.log(commandArgs);
+    const envManager = createEnvManager(
+      command,
+      commandArgs,
+      givenConfigurations.configurationName,
     );
-    return;
-  }
-  // Start the docker process
-  envManager.checkImage();
-});
+    // Check if docker command exists
+    try {
+      await runCommand(`docker images`);
+    } catch (error) {
+      console.log(`Error docker: ${error}`);
+      dialog.showErrorBox(
+        'Error starting Docker',
+        `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+      );
+      return;
+    }
+    // Start the docker process
+    envManager.checkImage();
+  },
+);
 
 /* ---------------------------------------
   Code from Electron Boilerplate
