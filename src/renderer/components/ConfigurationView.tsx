@@ -17,6 +17,7 @@ export default function ConfigurationView() {
   const [directoryName, setDirectoryName] = useState('');
   const [directoryPath, setDirectoryPath] = useState('');
   const [configurationName, setConfigurationName] = useState('');
+  const [error, setError] = useState('');
   const commandRef = useRef<string>('');
 
   /**
@@ -57,7 +58,26 @@ export default function ConfigurationView() {
               name="name"
               id="name"
               value={configurationName}
-              onChange={(e) => setConfigurationName(e.target.value)}
+              pattern="^/?([a-zA-Z0-9_]+)$"
+              maxLength={255}
+              onChange={(e) => {
+                setConfigurationName(e.target.value);
+                e.target.setCustomValidity('');
+                // If configuration name contains whitespace, inform user that name cannot have spaces
+                if (!e.target.checkValidity()) {
+                  e.target.setCustomValidity(
+                    'Name cannot contain spaces or special characters',
+                  );
+                  e.target.reportValidity();
+                }
+              }}
+              onBlur={(e) => {
+                if (e.target.checkValidity()) {
+                  setError('');
+                } else {
+                  setError('Invalid name');
+                }
+              }}
             />
           </label>
         </div>
@@ -72,7 +92,7 @@ export default function ConfigurationView() {
           isDirectory
           openDialog={openDialog}
         />
-        {commandRef.current ? (
+        {commandRef.current && !error ? (
           <div className="file">
             <button
               type="button"

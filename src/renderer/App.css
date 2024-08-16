@@ -379,3 +379,7 @@ a:hover {
   transform: none;
   cursor: default;
 }
+
+#name:invalid {
+  border: red 2px solid;
+}

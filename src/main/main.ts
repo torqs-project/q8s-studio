@@ -451,6 +451,7 @@ ipcMain.handle(
   'runCommand',
   async (_event, givenConfigurations: SaveFormat) => {
     const command = 'docker';
+
     // Create the docker command arguments
     const commandArgs = [
       'run',
