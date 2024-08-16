@@ -182,6 +182,7 @@ function createEnvManager(
      */
     async removeAndRunContainer(): Promise<void> {
       try {
+        console.log(`Remove ${containerName}`);
         await runCommand(`docker container rm ${containerName}`);
         await this.dockerRun();
       } catch (error) {
@@ -455,14 +456,18 @@ ipcMain.handle(
     const containerName = renameContainerName(
       givenConfigurations.configurationName,
     );
-
+    const availablePort = await portscanner.findAPortNotInUse(
+      8888,
+      9999,
+      '127.0.0.1',
+    );
     // Create the docker command arguments
     const commandArgs = [
       'run',
       '--name',
       containerName,
       '-p',
-      '8888:8888',
+      `${availablePort}:8888`,
       '-v',
       `${givenConfigurations.kubeconfigPath}:/home/jupyter/.kube/config`,
       '-v',
