@@ -16,6 +16,7 @@ import {
   ipcMain,
   dialog,
   WebContents,
+  nativeTheme,
 } from 'electron';
 
 import { autoUpdater } from 'electron-updater';
@@ -608,6 +609,7 @@ app
         console.log(error);
       }
     }
+    console.log(nativeTheme.shouldUseDarkColors);
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

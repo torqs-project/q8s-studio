@@ -92,6 +92,20 @@ function BasicLayout() {
             Documentation
           </button>
         </a>
+        <button
+          type="button"
+          onClick={() => {
+            // Plain JS to toggle dark-mode, using prefers-color-scheme
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem(
+              'dark-mode',
+              document.body.classList.contains('dark-mode') ? 'true' : 'false',
+            );
+          }}
+        >
+          <span role="img" aria-label="books" />
+          Toggle dark-mode
+        </button>
       </footer>
     </>
   );
