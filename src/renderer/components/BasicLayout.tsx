@@ -11,10 +11,6 @@ function BasicLayout() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState('');
   const { navState, setNavState } = useAppNavigation();
-  // let navState = useLocation().state?.navState;
-  // if (!navState) {
-  //   navState = 'config';
-  // }
   return (
     <>
       <footer id="top">
@@ -93,18 +89,13 @@ function BasicLayout() {
           </button>
         </a>
         <button
+          id="bottomRightFooter"
           type="button"
           onClick={() => {
-            // Plain JS to toggle dark-mode, using prefers-color-scheme
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem(
-              'dark-mode',
-              document.body.classList.contains('dark-mode') ? 'true' : 'false',
-            );
+            window.electronAPI.toggle();
           }}
         >
-          <span role="img" aria-label="books" />
-          Toggle dark-mode
+          Toggle Dark mode
         </button>
       </footer>
     </>

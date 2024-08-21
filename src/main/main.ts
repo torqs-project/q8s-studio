@@ -424,6 +424,14 @@ ipcMain.handle('loadFiles', () => {
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
+ipcMain.handle('dark-mode:toggle', () => {
+  if (nativeTheme.shouldUseDarkColors) {
+    nativeTheme.themeSource = 'light';
+  } else {
+    nativeTheme.themeSource = 'dark';
+  }
+  return nativeTheme.shouldUseDarkColors;
+});
 ipcMain.handle('checkDocker', async () => {
   try {
     await runCommand(`docker info`);
@@ -609,7 +617,6 @@ app
         console.log(error);
       }
     }
-    console.log(nativeTheme.shouldUseDarkColors);
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

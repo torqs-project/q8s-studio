@@ -30,6 +30,7 @@ body {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  margin: 0;
 }
 
 footer {
@@ -283,7 +284,7 @@ a:hover {
   width: 30px;
 }
 
-#footerRight {
+#footerRight, #bottomRightFooter {
   position: absolute;
   right: 0.5em;
   font-size: 1.3rem;
@@ -474,10 +475,7 @@ button, .tile, .input-div {
   background-color: rgba(255, 2, 2, 0);
 }
 
-#footerRight span {
-  color: green;
-  border: green 1px solid;
-}
+
 .selected {
   border-bottom: 3px solid rgb(0, 0, 0);
 }
@@ -487,7 +485,7 @@ button, .tile, .input-div {
 @media (prefers-color-scheme: dark) {
 
 
-  #root {
+  #root, body {
     color: white;
     background-color: var(--dark-bg);
   }
@@ -553,90 +551,6 @@ button, .tile, .input-div {
     background-color: rgba(100, 100, 100, 0);
   }
 
-  #footerRight span {
-    color: green;
-    border: green 1px solid;
-  }
-
-  .selected {
-    border-bottom: 3px solid rgb(255, 255, 255);
-  }
-
-}
-
-.dark-mode{
-
-
-  #root {
-    color: white;
-    background-color: var(--dark-bg);
-  }
-
-  .navigatorButtons button{
-    background-color: var(--dark-bg) ;
-  }
-  button, .tile, .input-div {
-    background-color: #222;
-    color: white;
-    /* box-shadow: 0px 8px 28px -6px rgba(255, 255, 255, 0.12),
-  0px 18px 45px -4px rgba(180, 180, 180, 0.14); */
-  }
-
-  .stopBtn {
-    color: red;
-    border: 1px solid rgb(255, 0, 0);
-  }
-
-  .del-btn{
-    background-color: #444;
-  }
-
-  .console {
-    background-color: var(--dark-buttons);
-    color: white;
-  }
-
-  .console-header {
-    background-color: var(--dark-bg);
-    color: white;
-    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
-      0px 18px 50px -4px rgba(0, 0, 0, 0.71);
-  }
-
-  .create-plus {
-    color: rgb(0, 255, 0);
-  }
-
-  .save-button {
-    background-color: #333;
-    color: white;
-  }
-
-
-  .input-div{
-    background-color: #555;
-  }
-
-  .text-input input {
-    background-color: #444;
-  }
-
-  .modal {
-    background-color: #4444446c;
-  }
-
-  .modal > div {
-    background-color: #555;
-  }
-
-  .close-button {
-    background-color: rgba(100, 100, 100, 0);
-  }
-
-  #footerRight span {
-    color: green;
-    border: green 1px solid;
-  }
 
   .selected {
     border-bottom: 3px solid rgb(255, 255, 255);
