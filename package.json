@@ -173,7 +173,8 @@
     "files": [
       "dist",
       "node_modules",
-      "package.json"
+      "package.json",
+      "assets/icons"
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
@@ -202,19 +203,22 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "icon": "icon.icns"
     },
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon" : "appIcon.ico"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "icon" : "appIconLessWhite.png"
     },
     "directories": {
       "app": "release/app",
