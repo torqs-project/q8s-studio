@@ -7,11 +7,14 @@ export type SaveFormat = {
   directoryPath: string;
 };
 
+interface ConfigurationViewProps {
+  onClose: () => void;
+}
 /**
  * The configuration view.
  * Handles file and directory states and renders the configuration view.
  */
-export default function ConfigurationView() {
+export default function ConfigurationView({ onClose }: ConfigurationViewProps) {
   const [kubeconfigName, setKubeconfigName] = useState('');
   const [kubeconfigPath, setKubeconfigPath] = useState('');
   const [directoryName, setDirectoryName] = useState('');
@@ -107,9 +110,7 @@ export default function ConfigurationView() {
                   .writeFile(configurationName, objectToSave)
                   .then((isSaved) => {
                     if (isSaved) {
-                      window.location.reload();
-                      // setNavState('');
-                      // setNavState('config');
+                      onClose();
                       return isSaved;
                     }
                     throw new Error('Error saving file');

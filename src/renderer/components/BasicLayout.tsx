@@ -11,6 +11,7 @@ function BasicLayout() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState('');
   const { navState, setNavState } = useAppNavigation();
+  const [refreshConfigs, setRefreshConfigs] = useState(false);
   return (
     <>
       <footer id="top">
@@ -53,7 +54,7 @@ function BasicLayout() {
       <div>
         <Outlet />
         {navState === 'config' ? (
-          <ConfigurationsList>
+          <ConfigurationsList refresh={refreshConfigs}>
             <button
               type="button"
               className="create-plus"
@@ -69,7 +70,13 @@ function BasicLayout() {
         )}
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
-            <ConfigurationView />
+            <ConfigurationView
+              onClose={() => {
+                setShowModal('');
+                // Refresh configurationsList
+                setRefreshConfigs(!refreshConfigs);
+              }}
+            />
           </ModalWindow>
         ) : (
           ''
