@@ -5,14 +5,12 @@ import xmarkSolid from '../../../assets/icons/stop.svg';
 /**
  * A component for showing the console output
  *
- * Listens on IPC for output, and possibly for a password prompt.
- * If password is needed, the prompt is shown for the user and password is forwarded to the main process.
+ * Listens on IPC for output.
  * @returns {React.JSX.Element}
  */
 export default function ConsoleView(): React.JSX.Element {
   const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
   const { envName } = useAppNavigation();
-  const [showPassInput, setShowPassInput] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
 
   // Add auto-scroll to the bottom of the console
@@ -31,9 +29,6 @@ export default function ConsoleView(): React.JSX.Element {
       setPKey(pKey + 1);
       const newline: React.JSX.Element = <p key={pKey}>{data}</p>;
       setOutput([...output, newline]);
-    });
-    window.electronAPI.askPass((needsPassword: boolean) => {
-      setShowPassInput(needsPassword);
     });
     window.electronAPI.labUrl((labUrlFromMain: string) => {
       setLabUrl(labUrlFromMain);
@@ -133,41 +128,8 @@ export default function ConsoleView(): React.JSX.Element {
             Clear output
           </button>
         </div>
-        <div className={showPassInput ? 'output-pass' : 'output-pass hidden'}>
-          {output}{' '}
-          <div>
-            {/* Password promt */}
-            {showPassInput ? (
-              // eslint-disable-next-line jsx-a11y/label-has-associated-control
-              <label className="pass">
-                {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-                <input type="password" autoFocus />
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    const clickedButton = event.target;
-                    const passInput: HTMLInputElement | null = (
-                      clickedButton as HTMLElement
-                    ).previousElementSibling as HTMLInputElement;
-                    // console.log(passInput?.value);
-                    window.electronAPI?.password(
-                      (passInput.value as string) || '',
-                    );
-                    setShowPassInput(false);
-                  }}
-                >
-                  OK
-                </button>
-              </label>
-            ) : (
-              ''
-            )}
-          </div>
-        </div>
-        {/* Console without password prompt */}
-        <div className={showPassInput ? 'output hidden' : 'output'}>
-          {output}{' '}
-        </div>
+        {/* Console output */}
+        <div className="output">{output} </div>
       </div>
     </div>
   );

@@ -40,21 +40,7 @@ const electronAPI = {
   killProcess: (containerName: string) => {
     return ipcRenderer.invoke('killProcess', containerName);
   },
-  /**
-   * Ask the user for a password
-   * @param callback the callback to call with the password
-   * @returns nothing
-   */
-  askPass: (callback: (data: boolean) => void) => {
-    ipcRenderer.on('ask-pass', (event, data) => callback(data));
-  },
   checkDocker: () => ipcRenderer.invoke('checkDocker'),
-  /**
-   * Send the password to the main process
-   * @param value the password to send
-   * @returns nothing
-   */
-  password: (value: string) => ipcRenderer.send('pass', value),
   /**
    * Sends boolean value to renderer process to check if a docker image exists
    * @param callback

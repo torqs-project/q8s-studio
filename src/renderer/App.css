@@ -102,18 +102,6 @@ input.visually-hidden:is(:focus, :focus-within) + label {
   outline: thin dotted;
 }
 
-.pass {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  column-gap: 0.5em;
-
-  button {
-    padding: 0.25em 0.5em;
-    /* margin-left: 0.5em; */
-  }
-}
-
 button,
 .tile,
 .input-div {
@@ -210,15 +198,6 @@ a:hover {
   p {
     margin: 0;
     padding: 0.5em 0.5em;
-  }
-
-  .output-pass {
-    display: flex;
-    margin-top: 1.2em;
-
-    button:hover {
-      transform: scale(1.15);
-    }
   }
 
   .console-header {
@@ -425,11 +404,6 @@ body {
 
 #root {
   color: black;
-}
-
-.pass {
-  background-color: black;
-  color: white;
 }
 
 button, .tile, .input-div {
