@@ -167,7 +167,7 @@
   },
   "build": {
     "productName": "QubernetesStudio",
-    "appId": "org.erb.ElectronReact",
+    "appId": "org.torqs.q8sStudio",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
