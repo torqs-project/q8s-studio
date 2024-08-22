@@ -3,12 +3,13 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
  #root {
+  --dark-bg: #444;
+  --dark-buttons: #222;
   /* position: relative; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  color: black;
   overflow: auto;
   overflow-y: auto;
   width: 100vw;
@@ -20,6 +21,7 @@
     #7a2c9e 129.35%
   ); */
 }
+
 body {
   font-family: sans-serif;
   display: flex;
@@ -28,6 +30,7 @@ body {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  margin: 0;
 }
 
 footer {
@@ -35,7 +38,8 @@ footer {
   justify-content: center;
   align-items: center;
   width: 100%;
-  .navigatorButtons{
+
+  .navigatorButtons {
     display: flex;
     flex-direction: row;
     /* width: 100%; */
@@ -44,18 +48,19 @@ footer {
     padding-left: 0.2em;
     padding-right: 2em;
     /* border-bottom: 2px solid gainsboro; */
+
     button {
-      margin:0 0.5em;
+      margin: 0 0.5em;
       padding: 0.25em 0;
       box-shadow: none;
       border-radius: 0%;
     }
   }
-  .selected{
-    border-bottom: 3px solid rgb(0, 0, 0);
+
+  .selected {
     border-spacing: 1em;
-    padding: 0.5em 0
-   }
+    padding: 0.5em 0;
+  }
 }
 
 #top {
@@ -63,8 +68,8 @@ footer {
   margin-top: 0.5em;
 }
 
-#bottom button{
- margin-bottom: 0.5em;
+#bottom button {
+  margin-bottom: 0.5em;
 }
 
 .content {
@@ -74,10 +79,12 @@ footer {
   align-items: center;
   height: 100%;
   row-gap: 2em;
+
   h2 {
     margin: 0;
   }
-  >div {
+
+  > div {
     margin: 0;
     padding: 0;
   }
@@ -90,24 +97,14 @@ footer {
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
 }
+
 input.visually-hidden:is(:focus, :focus-within) + label {
   outline: thin dotted;
 }
 
-.pass {
-  background-color: black;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  column-gap: 0.5em;
-  button {
-    padding: 0.25em 0.5em;
-    /* margin-left: 0.5em; */
-  }
-}
-
-button, .tile, .input-div{
-  background-color: white;
+button,
+.tile,
+.input-div {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -122,19 +119,21 @@ button, .tile, .input-div{
   cursor: pointer;
 }
 
-button:hover, .tile:hover {
+button:hover,
+.tile:hover {
   transform: scale(1.05);
   opacity: 1;
 }
 
-.cmd{
+.cmd {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   max-width: 75vw;
 }
-.file{
+
+.file {
   height: auto;
   /* margin: 2em 0em 0em; */
   display: flex;
@@ -156,54 +155,52 @@ a:hover {
   opacity: 1;
   text-decoration: none;
 }
-.processBtns{
+
+.processBtns {
   display: flex;
   flex-direction: row;
   column-gap: 1em;
-  button{
+
+  button {
     flex-grow: 10;
   }
-  .stopBtn{
+
+  .stopBtn {
     /* background-color: red; */
     border: 1px solid rgb(255, 0, 0);
-    color: rgb(255, 0, 0);
     flex-grow: 1;
-    color: red;
     padding-left: 10px;
+
     img {
       margin-right: 10px;
-    };
+    }
   }
-  .infoP{
+
+  .infoP {
     position: relative;
     margin: auto;
   }
 }
-.console{
-  background-color: black;
-  color: white;
+
+.console {
   width: 75vw;
   min-height: 30vh;
   max-height: 55vh;
   border-radius: 10px;
   overflow: auto;
   transition: all ease-in 0.1s;
-  >p:first-child{
+
+  > p:first-child {
     font-weight: bold;
     font-size: 1.5rem;
   }
+
   p {
     margin: 0;
     padding: 0.5em 0.5em;
   }
-  .output-pass{
-    display: flex;
-    margin-top: 1.2em;
-    button:hover{
-      transform: scale(1.15);
-    }
-  }
-  .console-header{
+
+  .console-header {
     position: sticky;
     top: 0;
     padding-top: 0.5em;
@@ -213,39 +210,42 @@ a:hover {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    background-color: black;
-    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
-    0px 18px 50px -4px rgba(0, 0, 0, 0.71);
     /* align-items: center; */
     /* column-gap: 0.5em */
+    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
+      0px 18px 50px -4px rgba(0, 0, 0, 0.71);
   }
-  .clearBtn{
+
+  .clearBtn {
     /* position: sticky; */
-    font-size:medium;
+    font-size: medium;
     left: 100%;
     padding-left: none;
     margin-right: 0.5em;
-  };
+  }
 }
 
-.hidden{
+.hidden {
   display: none !important;
 }
 
-.tile-div{
+.tile-div {
   display: flex;
   flex-direction: row;
 }
+
 .tile-btn {
   width: 30vw;
   justify-content: space-between;
 }
+
 .del-btn {
   background: rgba(255, 0, 0, 0);
   box-shadow: none;
   padding-left: 0.4em;
 }
-.conf-list{
+
+.conf-list {
   display: flex;
   flex-direction: column;
   row-gap: 2em;
@@ -254,36 +254,38 @@ a:hover {
   flex-wrap: wrap;
   max-height: 75vh;
 }
-.create-plus{
+
+.create-plus {
   border-radius: 100%;
   padding: 1em;
   font-size: x-large;
-  color: rgb(0, 166, 0);
   height: 30px;
   width: 30px;
 }
-#footerRight{
+
+#footerRight, #bottomRightFooter {
   position: absolute;
   right: 0.5em;
-
   font-size: 1.3rem;
   display: flex;
   flex-direction: row;
   align-items: center;
   column-gap: 0.5em;
   /* margin: 0.5em 0 0.5em 0; */
-  span{
+
+  span {
     font-weight: bold;
     margin-left: 0.5em;
     margin-right: 0em;
-    border: green 1px solid;
     padding: 0.25em 0.5em;
     border-radius: 100%;
+    border: green 1px solid;
     color: green;
   }
 }
+
 /* MODAL WINDOW */
-.modal{
+.modal {
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
@@ -293,17 +295,14 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  >div{
-    background-color: white;
+
+  > div {
     padding: 1em;
     border-radius: 10px;
-    /* display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; */
     width: 80vw;
     height: 50vh;
   }
+
   .close-button {
     position: relative;
     bottom: calc(100% + 0.75rem);
@@ -318,50 +317,57 @@ a:hover {
     /* box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
       0px 18px 45px -4px rgba(24, 39, 75, 0.14); */
     transition: all ease-in 0.1s;
-    img{
+
+    img {
       width: 2em;
       height: 2em;
     }
   }
-  .close-button:hover{
+
+  .close-button:hover {
     transform: scale(1.25);
   }
-  >div>div{
+
+  > div > div {
     height: 100%;
     width: 100%;
-  }
-  .console{
-    width: 100%;
-    height: 100%;
   }
 
+  .console {
+    width: 100%;
+    height: 100%;
+  }
 }
+
 .save-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 0.75em 0.75em;
-    /* padding-left: 0.5em; */
-    /* margin-top: 5em; */
-    cursor: pointer;
-    border-radius: 12px;
-    svg {
-      margin-right: 0.75em;
-    }
+  padding: 0.75em 0.75em;
+  /* padding-left: 0.5em; */
+  /* margin-top: 5em; */
+  cursor: pointer;
+  border-radius: 12px;
+
+  svg {
+    margin-right: 0.75em;
+  }
 }
-.input-div{
+
+.input-div {
   width: auto;
   cursor: auto;
   box-shadow: none;
-  span{
+
+  span {
     align-self: center;
     margin-right: 0.5em;
   }
 }
-.text-input{
+
+.text-input {
   display: flex;
   flex-direction: row;
   width: max-content;
-  input{
+
+  input {
     font-size: 1.2rem;
     border-radius: 10px;
     padding: 0.5em 1em;
@@ -371,10 +377,11 @@ a:hover {
   }
 }
 
-.showDownloadBtn{
+.showDownloadBtn {
   box-shadow: none;
 }
-.showDownloadBtn:hover{
+
+.showDownloadBtn:hover {
   box-shadow: none;
   transform: none;
   cursor: default;
@@ -382,4 +389,145 @@ a:hover {
 
 #name:invalid {
   border: red 2px solid;
+}
+
+
+
+
+@media (prefers-color-scheme: light) {
+  /* Light Mode */
+body {
+  font-family: sans-serif;
+  background-color: white;
+  color: black;
+}
+
+#root {
+  color: black;
+}
+
+button, .tile, .input-div {
+  background-color: white;
+  color: black;
+}
+
+.stopBtn {
+  color: red;
+  border: 1px solid rgb(255, 0, 0);
+}
+
+.console {
+  background-color: black;
+  color: white;
+}
+
+.console-header {
+  background-color: black;
+  color: white;
+  box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
+    0px 18px 50px -4px rgba(0, 0, 0, 0.71);
+}
+
+.create-plus {
+  color: rgb(0, 166, 0);
+}
+
+.save-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.text-input input {
+  background-color: #f5f5f5;
+}
+
+.modal > div {
+  background-color: white;
+}
+
+.close-button {
+  background-color: rgba(255, 2, 2, 0);
+}
+
+
+.selected {
+  border-bottom: 3px solid rgb(0, 0, 0);
+}
+
+}
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+
+
+  #root, body {
+    color: white;
+    background-color: var(--dark-bg);
+  }
+
+  .navigatorButtons button{
+    background-color: var(--dark-bg) ;
+  }
+  button, .tile, .input-div {
+    background-color: #222;
+    color: white;
+    /* box-shadow: 0px 8px 28px -6px rgba(255, 255, 255, 0.12),
+  0px 18px 45px -4px rgba(180, 180, 180, 0.14); */
+  }
+
+  .stopBtn {
+    color: red;
+    border: 1px solid rgb(255, 0, 0);
+  }
+
+  .del-btn{
+    background-color: #444;
+  }
+
+  .console {
+    background-color: var(--dark-buttons);
+    color: white;
+  }
+
+  .console-header {
+    background-color: var(--dark-bg);
+    color: white;
+    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
+      0px 18px 50px -4px rgba(0, 0, 0, 0.71);
+  }
+
+  .create-plus {
+    color: rgb(0, 255, 0);
+  }
+
+  .save-button {
+    background-color: #333;
+    color: white;
+  }
+
+
+  .input-div{
+    background-color: #555;
+  }
+
+  .text-input input {
+    background-color: #444;
+  }
+
+  .modal {
+    background-color: #4444446c;
+  }
+
+  .modal > div {
+    background-color: #555;
+  }
+
+  .close-button {
+    background-color: rgba(100, 100, 100, 0);
+  }
+
+
+  .selected {
+    border-bottom: 3px solid rgb(255, 255, 255);
+  }
+
 }

@@ -1,6 +1,6 @@
 {
   "name": "q8s-studio",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "An user-friendly electron application for accessing the Qubernetes kernel.",
   "repository": {
     "type": "git",
@@ -167,13 +167,14 @@
   },
   "build": {
     "productName": "QubernetesStudio",
-    "appId": "org.erb.ElectronReact",
+    "appId": "org.torqs.q8sStudio",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
       "dist",
       "node_modules",
-      "package.json"
+      "package.json",
+      "assets/icons"
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
@@ -202,19 +203,22 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "icon": "icon.icns"
     },
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon" : "appIcon.ico"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "icon" : "appIconLessWhite.png"
     },
     "directories": {
       "app": "release/app",

@@ -16,6 +16,7 @@ import {
   ipcMain,
   dialog,
   WebContents,
+  nativeTheme,
 } from 'electron';
 
 import { autoUpdater } from 'electron-updater';
@@ -422,6 +423,14 @@ ipcMain.handle('loadFiles', () => {
 });
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
+});
+ipcMain.handle('dark-mode:toggle', () => {
+  if (nativeTheme.shouldUseDarkColors) {
+    nativeTheme.themeSource = 'light';
+  } else {
+    nativeTheme.themeSource = 'dark';
+  }
+  return nativeTheme.shouldUseDarkColors;
 });
 ipcMain.handle('checkDocker', async () => {
   try {

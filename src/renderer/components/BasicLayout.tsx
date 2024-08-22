@@ -11,10 +11,7 @@ function BasicLayout() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState('');
   const { navState, setNavState } = useAppNavigation();
-  // let navState = useLocation().state?.navState;
-  // if (!navState) {
-  //   navState = 'config';
-  // }
+  const [refreshConfigs, setRefreshConfigs] = useState(false);
   return (
     <>
       <footer id="top">
@@ -57,7 +54,7 @@ function BasicLayout() {
       <div>
         <Outlet />
         {navState === 'config' ? (
-          <ConfigurationsList>
+          <ConfigurationsList refresh={refreshConfigs}>
             <button
               type="button"
               className="create-plus"
@@ -73,7 +70,13 @@ function BasicLayout() {
         )}
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
-            <ConfigurationView />
+            <ConfigurationView
+              onClose={() => {
+                setShowModal('');
+                // Refresh configurationsList
+                setRefreshConfigs(!refreshConfigs);
+              }}
+            />
           </ModalWindow>
         ) : (
           ''
@@ -92,6 +95,15 @@ function BasicLayout() {
             Documentation
           </button>
         </a>
+        <button
+          id="bottomRightFooter"
+          type="button"
+          onClick={() => {
+            window.electronAPI.toggle();
+          }}
+        >
+          Toggle Dark mode
+        </button>
       </footer>
     </>
   );

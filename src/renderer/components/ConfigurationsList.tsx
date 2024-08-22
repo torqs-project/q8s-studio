@@ -1,8 +1,13 @@
-import React, { useState, useEffect, PropsWithChildren } from 'react';
+import React, { useState, useEffect } from 'react';
 import ConfigurationTile from './ConfigurationTile';
 import { SaveFormat } from './ConfigurationView';
 
-function ConfigurationsList({ children }: PropsWithChildren) {
+interface ConfigListProps {
+  children: React.JSX.Element;
+  refresh: boolean;
+}
+
+function ConfigurationsList({ children, refresh }: ConfigListProps) {
   const [configurations, setConfigurations] = useState<SaveFormat[]>([]);
 
   const loadFiles = async () => {
@@ -25,6 +30,10 @@ function ConfigurationsList({ children }: PropsWithChildren) {
         console.log(err);
       });
   }, []);
+
+  useEffect(() => {
+    loadFiles();
+  }, [refresh]);
 
   return (
     <div className="conf-list-container">
