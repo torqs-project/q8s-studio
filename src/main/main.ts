@@ -424,6 +424,9 @@ ipcMain.handle('loadFiles', () => {
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
+ipcMain.handle('dark-mode:get-state', () => {
+  return nativeTheme.shouldUseDarkColors;
+});
 ipcMain.handle('dark-mode:toggle', () => {
   if (nativeTheme.shouldUseDarkColors) {
     nativeTheme.themeSource = 'light';

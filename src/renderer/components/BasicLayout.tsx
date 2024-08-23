@@ -1,17 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import ModalWindow from './ModalView';
 import ConfigurationView from './ConfigurationView';
 import ConfigurationsList from './ConfigurationsList';
 import { useAppNavigation } from '../contexts/ConsoleContext';
+import darkIcon from '../../../assets/icons/darkMode.svg';
+import lightIcon from '../../../assets/icons/lightMode.svg';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
 function BasicLayout() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState('');
-  const { navState, setNavState } = useAppNavigation();
   const [refreshConfigs, setRefreshConfigs] = useState(false);
+  const [darkMode, setDarkMode] = useState();
+  const { navState, setNavState } = useAppNavigation();
+
+  useEffect(() => {
+    window.electronAPI
+      .getDarkModeState()
+      .then((state) => {
+        setDarkMode(state);
+        return state;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
   return (
     <>
       <footer id="top">
@@ -98,11 +113,15 @@ function BasicLayout() {
         <button
           id="bottomRightFooter"
           type="button"
-          onClick={() => {
-            window.electronAPI.toggle();
+          onClick={async () => {
+            setDarkMode(await window.electronAPI.toggle());
           }}
         >
-          Toggle Dark mode
+          {darkMode ? (
+            <img src={lightIcon} alt="Light mode icon" />
+          ) : (
+            <img src={darkIcon} alt="Dark mode icon" />
+          )}
         </button>
       </footer>
     </>

@@ -74,9 +74,8 @@ const electronAPI = {
       ipcRenderer.removeListener(channel, subscription);
     };
   },
-  toggle: () => {
-    ipcRenderer.invoke('dark-mode:toggle');
-  },
+  toggle: () => ipcRenderer.invoke('dark-mode:toggle'),
+  getDarkModeState: () => ipcRenderer.invoke('dark-mode:get-state'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
