@@ -6,6 +6,8 @@ import ConfigurationsList from './ConfigurationsList';
 import { useAppNavigation } from '../contexts/ConsoleContext';
 import darkIcon from '../../../assets/icons/darkMode.svg';
 import lightIcon from '../../../assets/icons/lightMode.svg';
+import githubLogo from '../../../assets/icons/github-mark.svg';
+import githubLogoWhite from '../../../assets/icons/github-mark-white.svg';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -99,15 +101,23 @@ function BasicLayout() {
       </div>
       <footer id="bottom">
         <a
-          href="https://github.com/torqs-project/q8s-studio?tab=readme-ov-file#q8s-studio"
+          href="https://github.com/torqs-project/q8s-studio?tab=readme-ov-file#contributing"
           target="_blank"
           rel="noreferrer"
         >
           <button type="button">
             <span role="img" aria-label="books">
-              📚
+              <img
+                style={{
+                  height: '24px',
+                  width: '24px',
+                  paddingRight: '0.5em',
+                }}
+                src={darkMode ? githubLogoWhite : githubLogo}
+                alt="GitHub logo"
+              />
             </span>
-            Documentation
+            Contribute on GitHub
           </button>
         </a>
         <button
