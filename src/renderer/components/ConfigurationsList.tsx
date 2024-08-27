@@ -23,11 +23,11 @@ function ConfigurationsList({ children, refresh }: ConfigListProps) {
   useEffect(() => {
     loadFiles()
       .then((result) => {
-        window.electronAPI.checkDocker();
+        window.electronAPI?.checkDocker();
         return result;
       })
       .catch((err) => {
-        console.log(err);
+        window.console.log(err);
       });
   }, []);
 

@@ -20,13 +20,13 @@ function BasicLayout() {
 
   useEffect(() => {
     window.electronAPI
-      .getDarkModeState()
+      ?.getDarkModeState()
       .then((state) => {
         setDarkMode(state);
         return state;
       })
       .catch((err) => {
-        console.log(err);
+        window.console.log(err);
       });
   }, []);
   return (
