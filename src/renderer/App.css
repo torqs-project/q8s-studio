@@ -5,6 +5,7 @@
  #root {
   --dark-bg: #444;
   --dark-buttons: #222;
+  --dark-modal-bg: #555;
   /* position: relative; */
   display: flex;
   flex-direction: column;
@@ -341,6 +342,8 @@ a:hover {
 
 .save-button {
   padding: 0.75em 0.75em;
+  background-color: #4CAF50;
+  color: white;
   /* padding-left: 0.5em; */
   /* margin-top: 5em; */
   cursor: pointer;
@@ -393,7 +396,7 @@ a:hover {
 
 
 
-
+/* Light Mode */
 @media (prefers-color-scheme: light) {
   /* Light Mode */
 body {
@@ -432,11 +435,6 @@ button, .tile, .input-div {
   color: rgb(0, 166, 0);
 }
 
-.save-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
 .text-input input {
   background-color: #f5f5f5;
 }
@@ -457,7 +455,6 @@ button, .tile, .input-div {
 }
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
-
 
   #root, body {
     color: white;
@@ -480,7 +477,7 @@ button, .tile, .input-div {
   }
 
   .del-btn{
-    background-color: #444;
+    background-color: VAR(--DARK-BG);
   }
 
   .console {
@@ -489,28 +486,27 @@ button, .tile, .input-div {
   }
 
   .console-header {
-    background-color: var(--dark-bg);
+    background-color: var(--dark-buttons);
     color: white;
     box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
       0px 18px 50px -4px rgba(0, 0, 0, 0.71);
+  }
+
+  .clearBtn {
+    background-color: var(--dark-bg);
   }
 
   .create-plus {
     color: rgb(0, 255, 0);
   }
 
-  .save-button {
-    background-color: #333;
-    color: white;
-  }
-
-
   .input-div{
-    background-color: #555;
+    background-color: var(--dark-modal-bg);
   }
 
   .text-input input {
-    background-color: #444;
+    background-color: VAR(--DARK-BG);
+    color: white;
   }
 
   .modal {
@@ -518,13 +514,12 @@ button, .tile, .input-div {
   }
 
   .modal > div {
-    background-color: #555;
+    background-color: var(--dark-modal-bg);
   }
 
   .close-button {
     background-color: rgba(100, 100, 100, 0);
   }
-
 
   .selected {
     border-bottom: 3px solid rgb(255, 255, 255);
