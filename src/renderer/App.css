@@ -3,9 +3,9 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
  #root {
-  --dark-bg: #444;
-  --dark-buttons: #222;
-  --dark-modal-bg: #555;
+  --dark-bg: #222;
+  --dark-buttons: #444;
+  --dark-modal-bg: #333;
   /* position: relative; */
   display: flex;
   flex-direction: column;
@@ -280,8 +280,8 @@ a:hover {
     margin-right: 0em;
     padding: 0.25em 0.5em;
     border-radius: 100%;
-    border: green 1px solid;
-    color: green;
+    border: rgba(0, 255, 0, 0.764) 2px solid;
+    color: rgb(0, 255, 0);
   }
 }
 
@@ -465,10 +465,10 @@ button, .tile, .input-div {
     background-color: var(--dark-bg) ;
   }
   button, .tile, .input-div {
-    background-color: #222;
+    background-color: var(--dark-buttons);
     color: white;
-    /* box-shadow: 0px 8px 28px -6px rgba(255, 255, 255, 0.12),
-  0px 18px 45px -4px rgba(180, 180, 180, 0.14); */
+    box-shadow: 0px 8px 28px -6px rgba(0, 0, 0, 0.251),
+  0px 18px 45px -4px rgba(0, 0, 0, 0.227);
   }
 
   .stopBtn {
@@ -477,19 +477,21 @@ button, .tile, .input-div {
   }
 
   .del-btn{
-    background-color: VAR(--DARK-BG);
+    background-color: var(--dark-bg);
   }
 
   .console {
     background-color: var(--dark-buttons);
     color: white;
+    box-shadow: 0px 8px 28px -6px rgba(0, 0, 0, 0.189),
+  0px 18px 45px -4px rgba(0, 0, 0, 0.128);
   }
 
   .console-header {
     background-color: var(--dark-buttons);
     color: white;
-    box-shadow: 0px 8px 30px -6px rgb(0, 0, 0),
-      0px 18px 50px -4px rgba(0, 0, 0, 0.71);
+    box-shadow: 0px 5px 30px -6px rgb(0, 0, 0),
+      0px 5px 50px -4px rgba(0, 0, 0, 0.71) !important;
   }
 
   .clearBtn {
@@ -502,15 +504,16 @@ button, .tile, .input-div {
 
   .input-div{
     background-color: var(--dark-modal-bg);
+    box-shadow: none;
   }
 
   .text-input input {
-    background-color: VAR(--DARK-BG);
+    background-color: var(--dark-buttons);
     color: white;
   }
 
   .modal {
-    background-color: #4444446c;
+    background-color: #191919cc;
   }
 
   .modal > div {
