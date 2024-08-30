@@ -16,6 +16,7 @@ const electronAPI = {
   loadFiles: (): Promise<SaveFormat[]> => {
     return ipcRenderer.invoke('loadFiles');
   },
+  getRunningProcesses: () => ipcRenderer.invoke('getRunningProcesses'),
   /**
    * Open a file or directory
    * @param isDirectory if the file is a directory

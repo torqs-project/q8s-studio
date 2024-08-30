@@ -8,7 +8,7 @@ import xmarkSolid from '../../../assets/icons/stop.svg';
  * Listens on IPC for output.
  * @returns {React.JSX.Element}
  */
-export default function ConsoleView(): React.JSX.Element {
+export default function ConsoleView(pid: string): React.JSX.Element {
   const { output, setOutput, pKey, setPKey, labUrl, setLabUrl } = useConsole();
   const { envName } = useAppNavigation();
   const [showDownload, setShowDownload] = useState(false);
@@ -114,7 +114,7 @@ export default function ConsoleView(): React.JSX.Element {
       <div className="console file">
         <div className="console-header">
           {envName ? (
-            <p>Current environment: {envName}</p>
+            <p>Current environment: {pid}</p>
           ) : (
             <p>No environment selected</p>
           )}

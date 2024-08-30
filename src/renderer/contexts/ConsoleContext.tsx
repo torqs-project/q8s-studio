@@ -60,11 +60,11 @@ export function ConsoleProvider({ children }: { children: ReactNode }) {
 // Define the NavigationContextProps
 interface NavigationContextProps {
   navState: string;
-  setNavState: React.Dispatch<
-    React.SetStateAction<'environment' | 'config' | ''>
-  >;
+  setNavState: React.Dispatch<React.SetStateAction<string>>;
   envName: string;
   setEnvName: React.Dispatch<React.SetStateAction<string>>;
+  runningProcesses: string[];
+  setRunningProcesses: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 const NavigationContext = createContext<NavigationContextProps | undefined>(
@@ -88,10 +88,9 @@ export const useAppNavigation = () => {
  * @param {ReactNode} param0.children
  */
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const [navState, setNavState] = useState<'' | 'config' | 'environment'>(
-    'config',
-  );
+  const [navState, setNavState] = useState<string>('config');
   const [envName, setEnvName] = useState('');
+  const [runningProcesses, setRunningProcesses] = useState([]);
   // Memoize the value to avoid unnecessary re-renders
   const value = useMemo(
     () => ({
@@ -99,8 +98,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setNavState,
       envName,
       setEnvName,
+      runningProcesses,
+      setRunningProcesses,
     }),
-    [navState, setNavState, envName, setEnvName],
+    [
+      navState,
+      setNavState,
+      envName,
+      setEnvName,
+      runningProcesses,
+      setRunningProcesses,
+    ],
   );
   return (
     <NavigationContext.Provider value={value}>

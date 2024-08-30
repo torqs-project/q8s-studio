@@ -29,7 +29,7 @@ import { resolveHtmlPath } from './util';
 import { SaveFormat } from '../renderer/components/ConfigurationView';
 
 let mainWindow: BrowserWindow | null = null;
-const allChildProcessess: number[] = [];
+const allChildProcesses: number[] = [];
 const configFileDirName = 'user-configurations/'; // directory name for user configuration files
 
 class AppUpdater {
@@ -105,7 +105,18 @@ function createEnvManager(
   commandArgs: string[],
   containerName: string,
 ) {
+  let pid: number;
   return {
+    async getPid(): Promise<number> {
+      if (pid) {
+        return pid;
+      }
+      pid = parseInt(
+        await runCommand(`docker inspect -f '{{.State.Pid}}' ${containerName}`),
+        10,
+      );
+      return pid;
+    },
     /**
      * Checks if the Docker image exists and handles the container accordingly.
      * This is the main entry point to start the process.
@@ -230,7 +241,8 @@ function createEnvManager(
       try {
         const dockerProcess = spawn(command, commandArgs);
         if (dockerProcess.pid) {
-          allChildProcessess.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
+          pid = dockerProcess.pid;
+          allChildProcesses.push(dockerProcess.pid); // Add child process to list of all child processes for killing when exiting app
         }
         // Handle stdio
         // For some reason output from docker goes to stderr instead of stdout.
@@ -270,12 +282,13 @@ function createEnvManager(
               break;
           }
           if (dockerProcess.pid) {
-            const remIndex = allChildProcessess.indexOf(dockerProcess.pid);
+            const remIndex = allChildProcesses.indexOf(dockerProcess.pid);
             if (remIndex > -1) {
-              allChildProcessess.splice(remIndex, 1); // Remove child process from list of all child processes
+              allChildProcesses.splice(remIndex, 1); // Remove child process from list of all child processes
             }
           }
         });
+        pid = dockerProcess.pid;
       } catch (error) {
         console.log(`Error: ${error}`);
       }
@@ -424,10 +437,25 @@ ipcMain.handle('loadFiles', () => {
 ipcMain.handle('openFile', (event, arg) => {
   return handleFileOpen(event.sender, arg);
 });
+ipcMain.handle('getRunningProcesses', () => {
+  console.log('All child processess: ', allChildProcesses);
+  return allChildProcesses;
+});
+
 ipcMain.handle('dark-mode:get-state', () => {
   return nativeTheme.shouldUseDarkColors;
 });
 ipcMain.handle('dark-mode:toggle', () => {
+  // const child = new BrowserWindow({
+  //   parent: mainWindow!,
+  //   modal: true,
+  //   show: false,
+  //   frame: false,
+  // });
+  // child.loadURL('https://github.com');
+  // child.once('ready-to-show', () => {
+  //   child.show();
+  // });
   if (nativeTheme.shouldUseDarkColors) {
     nativeTheme.themeSource = 'light';
   } else {
@@ -447,7 +475,7 @@ ipcMain.handle('checkDocker', async () => {
   }
 });
 ipcMain.handle('killProcess', (event, configurationName) => {
-  killAllProcessess(allChildProcessess, renameContainerName(configurationName));
+  killAllProcessess(allChildProcesses, renameContainerName(configurationName));
   return 'All child processes killed';
 });
 ipcMain.handle('getPort', () =>
@@ -463,8 +491,19 @@ ipcMain.handle(
   'runCommand',
   async (_event, givenConfigurations: SaveFormat) => {
     const command = 'docker';
-    // Change configuration name to a valid docker name
+    // Check if docker command exists
+    try {
+      await runCommand(`docker images`);
+    } catch (error) {
+      console.log(`Error docker: ${error}`);
+      dialog.showErrorBox(
+        'Error starting Docker',
+        `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
+      );
+      return null;
+    }
 
+    // Change configuration name to a valid docker name
     const containerName = renameContainerName(
       givenConfigurations.configurationName,
     );
@@ -491,19 +530,10 @@ ipcMain.handle(
 
     console.log(commandArgs);
     const envManager = createEnvManager(command, commandArgs, containerName);
-    // Check if docker command exists
-    try {
-      await runCommand(`docker images`);
-    } catch (error) {
-      console.log(`Error docker: ${error}`);
-      dialog.showErrorBox(
-        'Error starting Docker',
-        `Remember to start docker. If Docker is not installed on your machine, download it from: \nhttps://www.docker.com/`,
-      );
-      return;
-    }
     // Start the docker process
-    envManager.checkImage();
+    await envManager.checkImage();
+
+    return envManager.getPid();
   },
 );
 
@@ -593,7 +623,7 @@ const createWindow = async () => {
 };
 
 app.on('window-all-closed', () => {
-  killAllProcessess(allChildProcessess);
+  killAllProcessess(allChildProcesses);
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {

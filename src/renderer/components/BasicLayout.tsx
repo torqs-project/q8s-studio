@@ -8,6 +8,7 @@ import darkIcon from '../../../assets/icons/darkMode.svg';
 import lightIcon from '../../../assets/icons/lightMode.svg';
 import githubLogo from '../../../assets/icons/github-mark.svg';
 import githubLogoWhite from '../../../assets/icons/github-mark-white.svg';
+import TabContainer from './TabContainer';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -44,6 +45,18 @@ function BasicLayout() {
           >
             My Configurations
           </button>
+          <TabContainer tabs={['config', 'environment']} />
+          {/* <button
+            className={navState === 'config' ? 'selected' : ''}
+            type="button"
+            onClick={() => {
+              setShowModal('');
+              navigate('/');
+              setNavState('config');
+            }}
+          >
+            My Configurations
+          </button>
           <button
             id="env"
             className={navState === 'environment' ? 'selected' : ''}
@@ -55,7 +68,7 @@ function BasicLayout() {
             }}
           >
             Environment output
-          </button>
+          </button> */}
         </div>
         <div id="footerRight">
           <button

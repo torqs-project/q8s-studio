@@ -69,6 +69,17 @@ footer {
   margin-top: 0.5em;
 }
 
+.tabDiv{
+  display: flex;
+  flex-direction: row;
+  > button {
+    margin-right: 0.25em !important;
+  }
+  .close-button {
+    margin: 0;
+  }
+}
+
 #bottom button {
   margin-bottom: 0.5em;
 }

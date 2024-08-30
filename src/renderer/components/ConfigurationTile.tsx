@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import runIcon from '../../../assets/icons/run.svg';
 import deleteIcon from '../../../assets/icons/delete.svg';
@@ -18,8 +18,15 @@ export default function ConfigurationTile({
   refreshConfigsList,
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName } = config;
-  const { setNavState, setEnvName } = useAppNavigation();
+  const { setNavState, setEnvName, runningProcesses, setRunningProcesses } =
+    useAppNavigation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('changed runningProcesses');
+    console.log(runningProcesses);
+  }, [runningProcesses]);
+
   return (
     <div className="tile-div">
       <button
@@ -35,12 +42,19 @@ export default function ConfigurationTile({
               console.log(err);
               return 0;
             });
-          navigate('/clg');
-          setNavState('environment');
+          setNavState(configurationName);
           setEnvName(configurationName);
+          navigate(`/`);
+          console.log('aölksdfaösfj');
           window.electronAPI
             .runCommand(config, portToUse.toString())
-            .then((result: any) => {
+            .then((result: number) => {
+              console.log('run command result', result);
+              console.log('runningProcesses', runningProcesses);
+              const newArr: number[] = runningProcesses.concat(result);
+              console.log('newArray is', newArr);
+              setRunningProcesses(newArr);
+              console.log('runningProcesses updated', runningProcesses);
               return result;
             })
             .catch(() => {});
@@ -55,7 +69,6 @@ export default function ConfigurationTile({
           window.electronAPI
             .deleteFile(configurationName)
             .then((result) => {
-              // TODO: refresh list
               refreshConfigsList();
               return result;
             })
