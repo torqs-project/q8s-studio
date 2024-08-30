@@ -25,7 +25,7 @@ export default function Tab({
 
   const navigate = useNavigate();
   return (
-    <div className={pid === index ? 'selected "tabDiv"' : 'tabDiv'}>
+    <div className={pid === index ? 'selected tabDiv' : 'tabDiv'}>
       <button
         className={currentTab === configName ? 'selected' : ''}
         type="button"
@@ -36,19 +36,18 @@ export default function Tab({
           // onClick(configName);
         }}
       >
-        {pid}
+        {configName}
       </button>
       <button type="button" className="close-button">
         <img src={xIcon} alt="" />
       </button>
       {pid === index ? (
         <p>
-          selected Tab {pid} {index}{' '}
+          {/* {pid} */}
+          {/* selected Tab {pid} {index}{' '} */}
         </p>
       ) : (
-        <p>
-          {pid} {index}
-        </p>
+        ''
       )}
       {}
     </div>

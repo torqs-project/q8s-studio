@@ -31,12 +31,12 @@ export default function TabContainer() {
   }, [navState, envName, runningProcesses]);
 
   return (
-    <div>
+    <div id="tabContainer">
       {runningProcesses.map((pid) => (
         <Tab
           key={pid}
           pid={pid}
-          configName={envName}
+          configName={envName} // TODO get name from running processes, needs refactoring, in style of [{pid:12331, configName:'test'}] }]
           index={selectedProcess}
           onClick={(): void => {
             console.log('click');
