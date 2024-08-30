@@ -58,13 +58,6 @@ export default function App() {
                   element={<ConsoleView process={process} />}
                 />
               ))} */}
-              {runningProcesses.map((process) => (
-                <Route
-                  key={process}
-                  path="/:process"
-                  element={<ConsoleView process={process} />}
-                />
-              ))}
             </Route>
           </Routes>
         </Router>

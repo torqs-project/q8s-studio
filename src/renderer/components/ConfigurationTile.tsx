@@ -18,8 +18,13 @@ export default function ConfigurationTile({
   refreshConfigsList,
 }: ConfigurationTileProps): React.JSX.Element {
   const { configurationName } = config;
-  const { setNavState, setEnvName, runningProcesses, setRunningProcesses } =
-    useAppNavigation();
+  const {
+    setNavState,
+    setEnvName,
+    runningProcesses,
+    setRunningProcesses,
+    setSelectedProcess,
+  } = useAppNavigation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,16 +49,19 @@ export default function ConfigurationTile({
             });
           setNavState(configurationName);
           setEnvName(configurationName);
-          navigate(`/`);
-          console.log('aölksdfaösfj');
+          setSelectedProcess(0);
           window.electronAPI
             .runCommand(config, portToUse.toString())
             .then((result: number) => {
               console.log('run command result', result);
               console.log('runningProcesses', runningProcesses);
-              const newArr: number[] = runningProcesses.concat(result);
-              console.log('newArray is', newArr);
-              setRunningProcesses(newArr);
+              console.log(!runningProcesses.includes(result));
+              if (!runningProcesses.includes(result)) {
+                const newArr: number[] = runningProcesses.concat(result);
+                console.log('newArray is', newArr);
+                setRunningProcesses(newArr);
+              }
+              setSelectedProcess(result);
               console.log('runningProcesses updated', runningProcesses);
               return result;
             })

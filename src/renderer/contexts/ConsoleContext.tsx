@@ -63,8 +63,10 @@ interface NavigationContextProps {
   setNavState: React.Dispatch<React.SetStateAction<string>>;
   envName: string;
   setEnvName: React.Dispatch<React.SetStateAction<string>>;
-  runningProcesses: string[];
+  runningProcesses: number[];
   setRunningProcesses: React.Dispatch<React.SetStateAction<number[]>>;
+  selectedProcess: number;
+  setSelectedProcess: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const NavigationContext = createContext<NavigationContextProps | undefined>(
@@ -91,6 +93,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [navState, setNavState] = useState<string>('config');
   const [envName, setEnvName] = useState('');
   const [runningProcesses, setRunningProcesses] = useState([]);
+  const [selectedProcess, setSelectedProcess] = useState(0);
   // Memoize the value to avoid unnecessary re-renders
   const value = useMemo(
     () => ({
@@ -100,6 +103,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setEnvName,
       runningProcesses,
       setRunningProcesses,
+      selectedProcess,
+      setSelectedProcess,
     }),
     [
       navState,
@@ -108,6 +113,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setEnvName,
       runningProcesses,
       setRunningProcesses,
+      selectedProcess,
+      setSelectedProcess,
     ],
   );
   return (

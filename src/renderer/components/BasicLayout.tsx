@@ -9,6 +9,7 @@ import lightIcon from '../../../assets/icons/lightMode.svg';
 import githubLogo from '../../../assets/icons/github-mark.svg';
 import githubLogoWhite from '../../../assets/icons/github-mark-white.svg';
 import TabContainer from './TabContainer';
+import ConsoleView from './ConsoleView';
 /**
  * A layout component that contains the top and bottom footers for the app.
  */
@@ -17,7 +18,8 @@ function BasicLayout() {
   const [showModal, setShowModal] = useState('');
   const [refreshConfigs, setRefreshConfigs] = useState(false);
   const [darkMode, setDarkMode] = useState();
-  const { navState, setNavState } = useAppNavigation();
+  const { navState, setNavState, selectedProcess, setSelectedProcess } =
+    useAppNavigation();
 
   useEffect(() => {
     window.electronAPI
@@ -35,11 +37,12 @@ function BasicLayout() {
       <footer id="top">
         <div className="navigatorButtons">
           <button
-            className={navState === 'config' ? 'selected' : ''}
+            className={selectedProcess === 0 ? 'selected' : ''}
             type="button"
             onClick={() => {
               setShowModal('');
-              navigate('/');
+              setSelectedProcess(0);
+              // navigate('/');
               setNavState('config');
             }}
           >
@@ -98,6 +101,7 @@ function BasicLayout() {
         ) : (
           ''
         )}
+        {selectedProcess !== 0 ? <ConsoleView pid={selectedProcess} /> : ''}
         {showModal ? (
           <ModalWindow onClose={() => setShowModal('')}>
             <ConfigurationView

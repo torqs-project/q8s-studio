@@ -4,7 +4,8 @@ import Tab from './Tab';
 
 export default function TabContainer() {
   const { navState, envName } = useAppNavigation();
-  const { runningProcesses, setRunningProcesses } = useAppNavigation();
+  const { runningProcesses, setRunningProcesses, selectedProcess } =
+    useAppNavigation();
 
   const getProcesses = async () => {
     try {
@@ -19,6 +20,11 @@ export default function TabContainer() {
   };
 
   useEffect(() => {
+    console.log('selected process changed', selectedProcess);
+    console.log(runningProcesses);
+  }, [selectedProcess]);
+
+  useEffect(() => {
     console.log('navState or envName changed', navState, envName);
     console.log('runningProcesses', runningProcesses);
     console.log(getProcesses());
@@ -26,17 +32,16 @@ export default function TabContainer() {
 
   return (
     <div>
-      {runningProcesses.map((proc) => (
+      {runningProcesses.map((pid) => (
         <Tab
-          key={proc}
-          pid={proc}
+          key={pid}
+          pid={pid}
           configName={envName}
-          index={proc}
-          onClick={(index: string): void => {
-            const ps = getProcesses();
-            console.log(ps);
+          index={selectedProcess}
+          onClick={(): void => {
             console.log('click');
-            console.log('index', index);
+            console.log('index', selectedProcess);
+            console.log('pid', pid);
           }}
           currentTab=""
         />
